@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ChernegaSergiy\TerminalUI\Validator;
+namespace ChernegaSergiy\TerminalUi\Validator;
 
 class CallbackValidator implements ValidatorInterface
 {
