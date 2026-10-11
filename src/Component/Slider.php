@@ -34,8 +34,8 @@ class Slider extends AbstractComponent
         ?int $default = null,
         int $step = 1,
         ?string $id = null,
-        string $changeValueInstruction = '← → для зміни значення, Enter для підтвердження',
-        string $quickInputInstruction = 'Або введіть цифру для швидкого вводу'
+        string $changeValueInstruction = '← → to change the value, Enter to confirm',
+        string $quickInputInstruction = 'Or type a digit for quick input'
     ) {
         if ($min > $max) {
             throw new \InvalidArgumentException("Slider minimum ({$min}) must not exceed its maximum ({$max}).");

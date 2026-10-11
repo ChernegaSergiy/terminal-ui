@@ -65,7 +65,7 @@ An interactive component designed for selecting a numeric value within a defined
 
 -   **Constructor**:
     ```php
-    public function __construct(string $label, int $min, int $max, ?int $default = null, int $step = 1, ?string $id = null, string $changeValueInstruction = '← → для зміни значення, Enter для підтвердження', string $quickInputInstruction = 'Або введіть цифру для швидкого вводу')
+    public function __construct(string $label, int $min, int $max, ?int $default = null, int $step = 1, ?string $id = null, string $changeValueInstruction = '← → to change the value, Enter to confirm', string $quickInputInstruction = 'Or type a digit for quick input')
     ```
     -   `$label` (string): The prompt or label displayed for the slider.
     -   `$min` (int): The minimum allowed value for the slider.
@@ -73,8 +73,8 @@ An interactive component designed for selecting a numeric value within a defined
     -   `$default` (int|null): The initial value of the slider. If `null`, it defaults to `$min`.
     -   `$step` (int): The increment/decrement amount when adjusting the slider value.
     -   `$id` (string|null): An optional unique identifier for the slider component.
-    -   `$changeValueInstruction` (string): Optional. The instruction message for changing the value (default: '← → для зміни значення, Enter для підтвердження').
-    -   `$quickInputInstruction` (string): Optional. The instruction message for quick input (default: 'Або введіть цифру для швидкого вводу').
+    -   `$changeValueInstruction` (string): Optional. The instruction message for changing the value (default: '← → to change the value, Enter to confirm').
+    -   `$quickInputInstruction` (string): Optional. The instruction message for quick input (default: 'Or type a digit for quick input').
 
 ### `NumberInput` Class
 
