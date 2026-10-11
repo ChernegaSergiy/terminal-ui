@@ -38,6 +38,10 @@ class Menu extends AbstractComponent
             $this->selected--;
         } elseif ($key === Key::Down && $this->selected < count($this->items) - 1) {
             $this->selected++;
+        } elseif ($key === Key::Home) {
+            $this->selected = 0;
+        } elseif ($key === Key::End) {
+            $this->selected = max(0, count($this->items) - 1);
         } elseif ($key === Key::Enter) {
             $this->cancelled = false;
             $this->done = true;
