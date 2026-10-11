@@ -646,13 +646,14 @@ function runInteractiveDemo(): void
     $menu = new Menu('Тест меню: Оберіть режим роботи', [
         'Швидкий тест слайдера та прапорця',
         'Тест множинного вибору (MultiSelect)',
+        'Тест пошуку та вибору (SearchSelect)',
         'Повна форма конфігурації (Form)',
         'Вийти з тесту',
     ]);
 
     $choice = Runner::run($menu);
 
-    if ($choice === null || $choice === 3) {
+    if ($choice === null || $choice === 4) {
         echo "Тестування завершено (скасовано користувачем).\n";
         return;
     }
@@ -681,6 +682,27 @@ function runInteractiveDemo(): void
             echo "Вибір скасовано.\n";
         } else {
             echo "Обрані модулі: " . implode(', ', $selected) . "\n";
+        }
+        return;
+    }
+
+    if ($choice === 2) {
+        $searchSelect = new SearchSelect('Оберіть пакет для встановлення', [
+            'monolog'         => 'monolog/monolog (Logging for PHP)',
+            'guzzle'          => 'guzzlehttp/guzzle (HTTP client)',
+            'symfony_console' => 'symfony/console (CLI library)',
+            'phpunit'         => 'phpunit/phpunit (Testing framework)',
+            'doctrine_orm'    => 'doctrine/orm (Object-relational mapping)',
+            'illuminate'      => 'illuminate/support (Laravel helper collection)',
+            'carbon'          => 'nesbot/carbon (DateTime API extension)',
+            'ramsey_uuid'     => 'ramsey/uuid (UUID generator)',
+        ], limit: 4);
+
+        $selected = Runner::run($searchSelect);
+        if ($selected === null) {
+            echo "Вибір скасовано.\n";
+        } else {
+            echo "Обраний пакет: {$selected} (" . $searchSelect->getSelectedValue() . ")\n";
         }
         return;
     }
