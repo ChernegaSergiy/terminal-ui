@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ChernegaSergiy\TerminalUi\Component;
 
+use ChernegaSergiy\TerminalUi\Terminal\Key;
+
 /**
  * Provides an interactive menu for terminal applications.
  */
@@ -31,16 +33,16 @@ class Menu extends AbstractComponent
         $this->navigationInstruction = $navigationInstruction;
     }
 
-    public function handleKey(string $key): void
+    public function handleKey(Key|string $key): void
     {
-        if ($key === 'up' && $this->selected > 0) {
+        if ($key === Key::Up && $this->selected > 0) {
             $this->selected--;
-        } elseif ($key === 'down' && $this->selected < count($this->items) - 1) {
+        } elseif ($key === Key::Down && $this->selected < count($this->items) - 1) {
             $this->selected++;
-        } elseif ($key === 'enter') {
+        } elseif ($key === Key::Enter) {
             $this->cancelled = false;
             $this->done = true;
-        } elseif ($key === 'esc') {
+        } elseif ($key === Key::Esc) {
             $this->cancelled = true;
             $this->done = true;
         }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ChernegaSergiy\TerminalUi\Component;
 
+use ChernegaSergiy\TerminalUi\Terminal\Key;
+
 /**
  * Interface for interactive terminal components.
  */
@@ -18,9 +20,10 @@ interface Component
 
     /**
      * Handles a key press and updates the component's state.
-     * @param string $key The key that was pressed (e.g., 'up', 'enter', 'a').
+     * @param Key|string $key The key that was pressed: a Key case for non-printable keys
+     *                        (e.g. Key::Up, Key::Enter) or the typed character itself (e.g. 'a', '1', ' ').
      */
-    public function handleKey(string $key): void;
+    public function handleKey(Key|string $key): void;
 
     /**
      * Checks if the component has finished its interaction.

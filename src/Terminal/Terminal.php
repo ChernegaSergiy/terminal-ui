@@ -91,10 +91,10 @@ class Terminal
 
     /**
      * Reads a single key press from the terminal.
-     * @return string The key pressed (e.g., 'up', 'down', 'enter', 'esc', or the character itself).
+     * @return Key|string A Key case for arrows, Enter, Esc, Tab and Backspace, otherwise the typed character itself.
      * @throws \RuntimeException If STDIN is closed (EOF).
      */
-    public static function readKey() : string
+    public static function readKey() : Key|string
     {
         $key = fread(STDIN, 3);
 
@@ -102,18 +102,18 @@ class Terminal
             throw new \RuntimeException('STDIN was closed while waiting for a key press.');
         }
 
-        if ($key === "\033[A") return 'up';
-        if ($key === "\033[B") return 'down';
-        if ($key === "\033[C") return 'right';
-        if ($key === "\033[D") return 'left';
+        if ($key === "\033[A") return Key::Up;
+        if ($key === "\033[B") return Key::Down;
+        if ($key === "\033[C") return Key::Right;
+        if ($key === "\033[D") return Key::Left;
 
-        if ($key === "\n" || $key === "\r") return 'enter';
+        if ($key === "\n" || $key === "\r") return Key::Enter;
 
-        if ($key === "\x7f" || $key === "\x08") return 'backspace';
+        if ($key === "\x7f" || $key === "\x08") return Key::Backspace;
 
-        if ($key === "\033") return 'esc';
+        if ($key === "\033") return Key::Esc;
 
-        if ($key === "\t") return 'tab';
+        if ($key === "\t") return Key::Tab;
 
         return $key;
     }

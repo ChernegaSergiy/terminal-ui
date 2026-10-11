@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ChernegaSergiy\TerminalUi\Component;
 
+use ChernegaSergiy\TerminalUi\Terminal\Key;
 use ChernegaSergiy\TerminalUi\Validator\ValidatorInterface;
 
 /**
@@ -24,17 +25,17 @@ class NumberInput extends AbstractComponent
         $this->validator = $validator;
     }
 
-    public function handleKey(string $key): void
+    public function handleKey(Key|string $key): void
     {
         $this->errorMessage = null; // Clear previous error on new input
 
-        if ($key === 'enter') {
+        if ($key === Key::Enter) {
             $this->errorMessage = $this->validate();
             $this->done = $this->errorMessage === null;
-        } elseif ($key === 'backspace' && strlen($this->current_value) > 0) {
+        } elseif ($key === Key::Backspace && strlen($this->current_value) > 0) {
             $this->current_value = substr($this->current_value, 0, -1);
             $this->done = false;
-        } elseif (ctype_digit($key) && strlen($this->current_value) < 3) {
+        } elseif (is_string($key) && ctype_digit($key) && strlen($this->current_value) < 3) {
             $this->current_value .= $key;
             $this->done = false;
         }

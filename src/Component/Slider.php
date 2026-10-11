@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ChernegaSergiy\TerminalUi\Component;
 
+use ChernegaSergiy\TerminalUi\Terminal\Key;
+
 /**
  * Provides an interactive slider input for terminal applications.
  */
@@ -53,21 +55,21 @@ class Slider extends AbstractComponent
         $this->quickInputInstruction = $quickInputInstruction;
     }
 
-    public function handleKey(string $key): void
+    public function handleKey(Key|string $key): void
     {
-        if ($key === 'left' || $key === 'right') {
+        if ($key === Key::Left || $key === Key::Right) {
             $this->typed = '';
-            $this->value = $key === 'left'
+            $this->value = $key === Key::Left
                 ? max($this->min, $this->value - $this->step)
                 : min($this->max, $this->value + $this->step);
-        } elseif ($key === 'enter') {
+        } elseif ($key === Key::Enter) {
             $this->done = true;
-        } elseif (ctype_digit($key)) {
+        } elseif (is_string($key) && ctype_digit($key)) {
             // Quick number input: digits are collected in place and clamped
             // to the slider's range, Enter confirms as usual.
             $this->typed = substr($this->typed . $key, 0, strlen((string) $this->max));
             $this->value = $this->clamp((int) $this->typed);
-        } elseif ($key === 'backspace' && $this->typed !== '') {
+        } elseif ($key === Key::Backspace && $this->typed !== '') {
             $this->typed = substr($this->typed, 0, -1);
             if ($this->typed !== '') {
                 $this->value = $this->clamp((int) $this->typed);

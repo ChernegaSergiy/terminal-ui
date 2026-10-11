@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ChernegaSergiy\TerminalUi\Component;
 
+use ChernegaSergiy\TerminalUi\Terminal\Key;
+
 /**
  * A component that manages a collection of other components, allowing navigation and submission.
  */
@@ -31,7 +33,7 @@ class Form extends AbstractComponent
         $this->components[] = $component;
     }
 
-    public function handleKey(string $key): void
+    public function handleKey(Key|string $key): void
     {
         $this->submitFailed = false;
 
@@ -42,13 +44,13 @@ class Form extends AbstractComponent
 
         $current_component = $this->components[$this->focusedIndex];
 
-        if ($key === 'down' || $key === 'tab') {
+        if ($key === Key::Down || $key === Key::Tab) {
             // Move focus to the next component
             $this->focusedIndex = ($this->focusedIndex + 1) % count($this->components);
-        } elseif ($key === 'up') {
+        } elseif ($key === Key::Up) {
             // Move focus to the previous component
             $this->focusedIndex = ($this->focusedIndex - 1 + count($this->components)) % count($this->components);
-        } elseif ($key === 'enter') {
+        } elseif ($key === Key::Enter) {
             $current_component->handleKey($key); // Pass Enter to the current component
 
             if ($current_component->isValid()) {
