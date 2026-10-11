@@ -118,9 +118,9 @@ class Form extends AbstractComponent
             echo "\033[0m\n"; // Reset color and add newline after each component's render
         }
 
-        echo "\n  \033[90mВикористовуйте ↑↓/Tab для навігації, Enter для підтвердження/переходу\033[0m\n";
+        echo "\n  \033[90mUse ↑↓/Tab to navigate, Enter to confirm and move on\033[0m\n";
         if ($this->submitFailed) {
-            echo "  \033[31m✗ Будь ласка, виправте помилки у формі.\033[0m\n";
+            echo "  \033[31m✗ Please fix the errors in the form.\033[0m\n";
         }
     }
 }
