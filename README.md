@@ -26,7 +26,7 @@ All interactive elements in this library implement the `Component` interface. Th
 
 -   `isValid(): bool`
     -   **Purpose**: Checks if the component's current state or collected value is valid according to its internal rules.
-    -   **Details**: Returns `true` if the component's data meets its validation criteria (e.g., a number is within a specified range, a required field is not empty). Note that some components, like `InteractiveInput`, might delegate validation to external validators, in which case this method might always return `true` internally.
+    -   **Details**: Returns `true` if the component's data meets its validation criteria (e.g., a number is within a specified range, a required field is not empty). Components like `InteractiveInput` delegate this check to their `ValidatorInterface`, so `isValid()` reflects whether the current value passes it.
 
 -   `getLabel(): string`
     -   **Purpose**: Returns a human-readable label or prompt for the component.

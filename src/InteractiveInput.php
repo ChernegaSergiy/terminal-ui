@@ -33,20 +33,14 @@ class InteractiveInput implements Component
         $this->errorMessage = null; // Clear previous error on new input
 
         if ($key === 'enter') {
-            if ($this->validator) {
-                $error = $this->validator->validate($this->current_value);
-                if ($error !== null) {
-                    $this->errorMessage = $error;
-                } else {
-                    $this->done = true;
-                }
-            } else {
-                $this->done = true;
-            }
+            $this->errorMessage = $this->validate();
+            $this->done = $this->errorMessage === null;
         } elseif ($key === 'backspace' && strlen($this->current_value) > 0) {
             $this->current_value = substr($this->current_value, 0, -1);
+            $this->done = false;
         } elseif (ctype_digit($key) && strlen($this->current_value) < 3) {
             $this->current_value .= $key;
+            $this->done = false;
         }
     }
 
@@ -60,9 +54,17 @@ class InteractiveInput implements Component
         return (int) $this->current_value;
     }
 
+    /**
+     * Whether the current value passes the validator (always true without one).
+     */
     public function isValid(): bool
     {
-        return true;
+        return $this->validate() === null;
+    }
+
+    private function validate(): ?string
+    {
+        return $this->validator?->validate($this->current_value);
     }
 
     public function getLabel(): string
