@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ChernegaSergiy\TerminalUI;
+namespace ChernegaSergiy\TerminalUi;
 
 /**
  * Runs an interactive component, handling the main event loop.
