@@ -52,6 +52,8 @@ class Terminal
 
         if ($key === "\033") return 'esc';
 
+        if ($key === "\t") return 'tab';
+
         return $key;
     }
 
