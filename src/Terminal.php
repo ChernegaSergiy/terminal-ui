@@ -36,10 +36,15 @@ class Terminal
     /**
      * Reads a single key press from the terminal.
      * @return string The key pressed (e.g., 'up', 'down', 'enter', 'esc', or the character itself).
+     * @throws \RuntimeException If STDIN is closed (EOF).
      */
     public static function readKey() : string
     {
         $key = fread(STDIN, 3);
+
+        if ($key === false || $key === '') {
+            throw new \RuntimeException('STDIN was closed while waiting for a key press.');
+        }
 
         if ($key === "\033[A") return 'up';
         if ($key === "\033[B") return 'down';
