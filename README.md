@@ -49,12 +49,15 @@ The `Form` class serves as a powerful container and manager for multiple `Compon
 
 -   **Constructor**:
     ```php
-    public function __construct(string $title, array $items, ?string $id = null, string $navigationInstruction = 'Використовуйте ↑↓ для навігації, Enter для вибору, ESC для виходу')
+    public function __construct(string $title, array $components = [], ?string $id = null)
     ```
-    -   `$title` (string): The title of the menu.
-    -   `$items` (array): An array of menu items (strings).
-    -   `$id` (string|null): Optional unique ID for the component.
-    -   `$navigationInstruction` (string): Optional. The instruction message displayed for navigation (default: 'Використовуйте ↑↓ для навігації, Enter для вибору, ESC для виходу').
+    -   `$title` (string): The title displayed above the form.
+    -   `$components` (Component[]): The child components, in the order they are shown. More can be added later with `addComponent()`.
+    -   `$id` (string|null): Optional unique ID for the component. Pass an ID to every child component you want to read back: `getResult()` returns an array keyed by child ID, and generated IDs are random.
+
+-   **Behaviour**:
+    -   Enter confirms the focused field and moves to the next one. A field that fails validation keeps the focus.
+    -   Enter on the last field submits the form only if every child is valid; otherwise focus jumps to the first invalid field.
 
 ### `Slider` Class
 
@@ -79,7 +82,7 @@ An interactive component for capturing a number from the user: it accepts digits
 
 -   **Constructor**:
     ```php
-    public function __construct(string $prompt, ?string $id = null, ?\ChernegaSergiy\\TerminalUi\\Validator\\ValidatorInterface $validator = null)
+    public function __construct(string $prompt, ?string $id = null, ?ValidatorInterface $validator = null)
     ```
     -   `$prompt` (string): The message displayed to the user asking for input.
     -   `$id` (string|null): An optional unique identifier for the input component.
@@ -92,7 +95,7 @@ To keep UI components clean and free of business logic, validation is handled ex
 #### `ValidatorInterface`
 
 ```php
-namespace ChernegaSergiy\\TerminalUi\\Validator;
+namespace ChernegaSergiy\TerminalUi\Validator;
 
 interface ValidatorInterface
 {
@@ -119,6 +122,10 @@ A convenient implementation of `ValidatorInterface` that allows you to define va
 
 This utility class provides a static method to run any `Component` (including a `Form`). It manages the terminal's raw input mode, continuously renders the component, and passes key presses to the component's `handleKey` method until the component's `isDone` method returns `true`. It then returns the component's result.
 
+The runner draws every frame in the terminal's alternative screen, so the output printed before it started is left untouched, and it restores the terminal (input mode, cursor, screen) when it finishes, fails, or the process is interrupted.
+
+**Requirements**: an interactive POSIX terminal with `stty` available. Windows and non-interactive input (pipes, redirected STDIN) are not supported and raise a `RuntimeException`. The optional `pcntl` extension lets the terminal be restored on `SIGINT`/`SIGTERM`/`SIGHUP`.
+
 ## Usage Example
 
 Here's a simple example demonstrating how to create a form with `Slider` and `NumberInput` components and run it, including external validation for `NumberInput`:
@@ -141,7 +148,7 @@ $slider2 = new Slider('Виберіть значення для Slider 2', 10, 2
 // Create a validator for age input
 $ageValidator = new CallbackValidator(function (string $value): ?string {
     if (empty($value)) {
-        return 'Вік є обов'язковим полем.';
+        return 'Вік є обов’язковим полем.';
     }
     if (!is_numeric($value)) {
         return 'Будь ласка, введіть числове значення.';
