@@ -8,9 +8,9 @@ This library provides a set of interactive components for building terminal-base
 
 All interactive elements in this library implement the `Component` interface. This interface defines the contract for how an interactive component should behave, ensuring a consistent API for interaction and data retrieval.
 
--   `render(): void`
-    -   **Purpose**: Displays the component's current state on the terminal screen. This method is responsible for all visual output of the component.
-    -   **Details**: Should output formatted text, progress bars, or any other visual representation relevant to the component.
+-   `render(): string`
+    -   **Purpose**: Describes the component's current state as a frame. The component never writes to the terminal itself; the `Runner` (or a parent `Form`) decides where the frame goes.
+    -   **Details**: Returns the lines of the component separated by `"\n"`, with no leading or trailing newline and no outer margin. It may contain ANSI styling (each styled span should reset itself). Because the result is a plain string, a component can be nested inside another one and tested by comparing the returned string.
 
 -   `handleKey(string $key): void`
     -   **Purpose**: Processes user key presses and updates the component's internal state accordingly.
@@ -120,7 +120,7 @@ A convenient implementation of `ValidatorInterface` that allows you to define va
 
 ### `Runner` Class
 
-This utility class provides a static method to run any `Component` (including a `Form`). It manages the terminal's raw input mode, continuously renders the component, and passes key presses to the component's `handleKey` method until the component's `isDone` method returns `true`. It then returns the component's result.
+This utility class provides a static method to run any `Component` (including a `Form`). It manages the terminal's raw input mode, prints the string returned by the component's `render()` after every key press, and passes key presses to the component's `handleKey` method until the component's `isDone` method returns `true`. It then returns the component's result.
 
 The runner draws every frame in the terminal's alternative screen, so the output printed before it started is left untouched, and it restores the terminal (input mode, cursor, screen) when it finishes, fails, or the process is interrupted.
 
