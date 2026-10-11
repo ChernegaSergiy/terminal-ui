@@ -142,28 +142,28 @@ use ChernegaSergiy\TerminalUi\Component\NumberInput;
 use ChernegaSergiy\TerminalUi\Validator\CallbackValidator;
 
 // Create components
-$slider1 = new Slider('Виберіть значення для Slider 1', 0, 100, 50, 5, 'slider_one');
-$slider2 = new Slider('Виберіть значення для Slider 2', 10, 20, 15, 1, 'slider_two');
+$slider1 = new Slider('Choose a value for Slider 1', 0, 100, 50, 5, 'slider_one');
+$slider2 = new Slider('Choose a value for Slider 2', 10, 20, 15, 1, 'slider_two');
 
 // Create a validator for age input
 $ageValidator = new CallbackValidator(function (string $value): ?string {
     if (empty($value)) {
-        return 'Вік є обов’язковим полем.';
+        return 'Age is required.';
     }
     if (!is_numeric($value)) {
-        return 'Будь ласка, введіть числове значення.';
+        return 'Please enter a numeric value.';
     }
     $age = (int) $value;
     if ($age < 0 || $age > 120) {
-        return 'Вік має бути від 0 до 120 років.';
+        return 'Age must be between 0 and 120.';
     }
     return null; // Valid
 });
 
-$ageInput = new NumberInput('Введіть ваш вік', 'age_input', $ageValidator);
+$ageInput = new NumberInput('Enter your age', 'age_input', $ageValidator);
 
 // Create the form and add components
-$form = new Form('Налаштування програми', [
+$form = new Form('Application settings', [
     $slider1,
     $slider2,
     $ageInput
@@ -173,7 +173,7 @@ $form = new Form('Налаштування програми', [
 $results = Runner::run($form);
 
 // Output the results
-echo "\n--- Результати форми ---\n";
+echo "\n--- Form results ---\n";
 foreach ($results as $id => $value) {
     echo "{$id}: {$value}\n";
 }
