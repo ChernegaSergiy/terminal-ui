@@ -120,6 +120,11 @@ $plain = Ansi::style(Ansi::BOLD_GREEN, 'Active');
 $t->assertSame('Active', $plain, 'Ansi::style returns plain text when disabled');
 Ansi::setEnabled(null); // Restore automatic detection
 
+$t->assertSame('32', Ansi::GREEN, 'Ansi::GREEN has correct code');
+$t->assertSame('33', Ansi::YELLOW, 'Ansi::YELLOW has correct code');
+$t->assertSame('1;35', Ansi::BOLD_MAGENTA, 'Ansi::BOLD_MAGENTA has correct code');
+$t->assertSame('1;37', Ansi::BOLD_WHITE, 'Ansi::BOLD_WHITE has correct code');
+
 // -----------------------------------------------------------------------------
 // 2. Terminal\Key Enum Tests
 // -----------------------------------------------------------------------------
