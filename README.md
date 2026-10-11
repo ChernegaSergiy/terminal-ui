@@ -1,6 +1,6 @@
 # terminal-ui
 
-This library provides a set of interactive components for building terminal-based user interfaces in PHP.
+This library provides a set of interactive components for building terminal-based user interfaces in PHP. It enables developers to create intuitive CLI applications with ready-to-use elements like forms, menus, sliders, checkboxes, and validated inputs.
 
 ## Core Concepts
 
