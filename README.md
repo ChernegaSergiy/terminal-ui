@@ -64,11 +64,15 @@ The `Form` class serves as a powerful container and manager for multiple `Compon
 
 -   **Constructor**:
     ```php
-    public function __construct(string $title, array $components = [], ?string $id = null)
+    public function __construct(string $title, array $fields = [], ?string $id = null)
     ```
     -   `$title` (string): The title displayed above the form.
-    -   `$components` (Component[]): The child components, in the order they are shown. More can be added later with `addComponent()`.
-    -   `$id` (string|null): Optional unique ID for the component. Pass an ID to every child component you want to read back: `getResult()` returns an array keyed by child ID, and generated IDs are random.
+    -   `$fields` (array<string, Component>): The child components keyed by field name, in the order they are shown. More can be added later with `add()`. A list without names throws an `InvalidArgumentException`.
+    -   `$id` (string|null): Optional unique ID for the component.
+
+-   **Adding fields**: `add(string $name, Component $component): static` appends a field and returns the form, so calls can be chained. The name must be non-empty and unique within the form; use `add()` instead of the constructor array for names that PHP would turn into integer keys (e.g. `'2024'`).
+
+-   **Result**: `getResult()` returns an array keyed by field name, e.g. `['age' => 25]`.
 
 -   **Behaviour**:
     -   Enter confirms the focused field and moves to the next one. A field that fails validation keeps the focus.
@@ -181,11 +185,11 @@ $ageValidator = new CallbackValidator(function (string $value): ?string {
 
 $ageInput = new NumberInput('Enter your age', 'age_input', $ageValidator);
 
-// Create the form and add components
+// Create the form: every field has a name that becomes its key in the result
 $form = new Form('Application settings', [
-    $slider1,
-    $slider2,
-    $ageInput
+    'slider_one' => $slider1,
+    'slider_two' => $slider2,
+    'age_input' => $ageInput,
 ]);
 
 // Run the form using Runner
