@@ -17,23 +17,32 @@ class ComponentRunner
     public static function run(Component $component): mixed
     {
         Terminal::enableRawMode();
+        Terminal::enterAlternativeScreen();
         Terminal::hideCursor();
 
         try {
-            // Initial render
-            $component->render();
+            self::draw($component);
 
             while (!$component->isDone()) {
                 $key = Terminal::readKey();
                 $component->handleKey($key);
-                $component->render();
+                self::draw($component);
             }
         } finally {
-            Terminal::disableRawMode();
-            Terminal::showCursor();
-            Terminal::clearScreen();
+            // Leaves the alternative screen, so whatever was on the terminal
+            // before the component started is shown again untouched.
+            Terminal::restore();
         }
 
         return $component->getResult();
+    }
+
+    /**
+     * Draws a single frame: every frame replaces the previous one.
+     */
+    private static function draw(Component $component): void
+    {
+        Terminal::clearScreen();
+        $component->render();
     }
 }

@@ -107,7 +107,6 @@ class Form implements Component
 
     public function render(): void
     {
-        Terminal::clearScreen();
         echo "\n  \033[1;36m{$this->title}\033[0m\n\n";
 
         foreach ($this->components as $index => $component) {
