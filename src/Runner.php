@@ -10,7 +10,7 @@ use ChernegaSergiy\TerminalUi\Terminal\Terminal;
 /**
  * Runs an interactive component, handling the main event loop.
  */
-class ComponentRunner
+class Runner
 {
     /**
      * Runs the given component until it is done.

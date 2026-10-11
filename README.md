@@ -115,7 +115,7 @@ A convenient implementation of `ValidatorInterface` that allows you to define va
     ```
     -   `$callback` (callable): A function that takes the input string as an argument and returns `null` for valid input or a string error message for invalid input.
 
-### `ComponentRunner` Class
+### `Runner` Class
 
 This utility class provides a static method to run any `Component` (including a `Form`). It manages the terminal's raw input mode, continuously renders the component, and passes key presses to the component's `handleKey` method until the component's `isDone` method returns `true`. It then returns the component's result.
 
@@ -130,7 +130,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use ChernegaSergiy\TerminalUi\Component\Form;
 use ChernegaSergiy\TerminalUi\Component\Slider;
-use ChernegaSergiy\TerminalUi\ComponentRunner;
+use ChernegaSergiy\TerminalUi\Runner;
 use ChernegaSergiy\TerminalUi\Component\NumberInput;
 use ChernegaSergiy\TerminalUi\Validator\CallbackValidator;
 
@@ -162,8 +162,8 @@ $form = new Form('Налаштування програми', [
     $ageInput
 ]);
 
-// Run the form using ComponentRunner
-$results = ComponentRunner::run($form);
+// Run the form using Runner
+$results = Runner::run($form);
 
 // Output the results
 echo "\n--- Результати форми ---\n";
