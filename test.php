@@ -34,6 +34,7 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 use ChernegaSergiy\TerminalUi\Component\Checkbox;
 use ChernegaSergiy\TerminalUi\Component\Form;
 use ChernegaSergiy\TerminalUi\Component\Menu;
+use ChernegaSergiy\TerminalUi\Component\MultiSelect;
 use ChernegaSergiy\TerminalUi\Component\NumberInput;
 use ChernegaSergiy\TerminalUi\Component\Slider;
 use ChernegaSergiy\TerminalUi\Component\TextInput;
@@ -360,9 +361,66 @@ $t->assert($valEmail->isDone(), 'Valid input completes on Enter');
 $t->assertSame('user@test.com', $valEmail->getResult(), 'Result is valid email string');
 
 // -----------------------------------------------------------------------------
-// 8. Form Component Tests
+// 8. MultiSelect Component Tests
 // -----------------------------------------------------------------------------
-$t->section('8. Component\\Form (Composite Component)');
+$t->section('8. Component\\MultiSelect');
+
+$ms = new MultiSelect('Мови', ['php' => 'PHP', 'py' => 'Python', 'go' => 'Go'], default: ['php']);
+$t->assertSame(['php'], $ms->getResult(), 'Default selection is php');
+$t->assert(!$ms->isDone(), 'MultiSelect starts not done');
+
+// Navigation
+$ms->handleKey(Key::Down);
+$t->assertSame(1, $ms->getCursor(), 'Cursor moves down');
+$ms->handleKey(Key::End);
+$t->assertSame(2, $ms->getCursor(), 'Cursor jumps to end');
+$ms->handleKey(Key::Home);
+$t->assertSame(0, $ms->getCursor(), 'Cursor jumps to home');
+
+// Toggling with Space
+$ms->handleKey(Key::Down); // cursor on 'py'
+$ms->handleKey(' '); // toggle 'py'
+$t->assertSame(['php', 'py'], $ms->getResult(), 'Space toggles item selection');
+$t->assertSame(['php' => 'PHP', 'py' => 'Python'], $ms->getSelectedValues(), 'getSelectedValues returns associative selected map');
+
+// Toggle all with 'a'
+$ms->handleKey('a'); // some selected -> deselect all
+$t->assertSame([], $ms->getResult(), 'Key a deselects all when some are selected');
+$ms->handleKey('a'); // none selected -> select all
+$t->assertSame(['php', 'py', 'go'], $ms->getResult(), 'Key a selects all when none are selected');
+
+// Cancellation with Esc
+$cancelMs = new MultiSelect('Пакет', ['a' => 'A', 'b' => 'B']);
+$cancelMs->handleKey(Key::Esc);
+$t->assert($cancelMs->isDone(), 'Esc completes multi-select');
+$t->assertSame(null, $cancelMs->getResult(), 'Cancelled multi-select returns null');
+$t->assert($cancelMs->isCancelled(), 'isCancelled returns true');
+
+// Validation (min and max)
+$validMs = new MultiSelect('Вибір', ['opt1' => 'One', 'opt2' => 'Two', 'opt3' => 'Three'], min: 2, max: 2);
+$validMs->handleKey(Key::Enter); // 0 selected, min is 2 -> fails
+$t->assert(!$validMs->isDone(), 'Fails on Enter when below min selections');
+$t->assert(str_contains($validMs->render(), 'at least 2 item(s)'), 'Displays min error message');
+
+$validMs->handleKey(' '); // select 'opt1'
+$validMs->handleKey(Key::Down);
+$validMs->handleKey(' '); // select 'opt2'
+$validMs->handleKey(Key::Down);
+$validMs->handleKey(' '); // select 'opt3' (3 selected, max is 2)
+$validMs->handleKey(Key::Enter);
+$t->assert(!$validMs->isDone(), 'Fails on Enter when above max selections');
+$t->assert(str_contains($validMs->render(), 'at most 2 item(s)'), 'Displays max error message');
+
+$validMs->handleKey(' '); // deselect 'opt3' (now 2 selected)
+$validMs->handleKey(Key::Enter);
+$t->assert($validMs->isDone(), 'Completes when selections satisfy min and max');
+$t->assertSame(['opt1', 'opt2'], $validMs->getResult(), 'Result contains valid selections');
+
+// -----------------------------------------------------------------------------
+// 9. Form Component Tests
+// -----------------------------------------------------------------------------
+$t->section('9. Component\\Form (Composite Component)');
+
 
 // Form constructor validation
 $invalidFormKey = false;
