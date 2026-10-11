@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ChernegaSergiy\TerminalUi;
 
+use ChernegaSergiy\TerminalUi\Terminal\Terminal;
+
 /**
  * Runs an interactive component, handling the main event loop.
  */

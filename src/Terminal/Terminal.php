@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ChernegaSergiy\TerminalUi;
+namespace ChernegaSergiy\TerminalUi\Terminal;
 
 /**
  * Provides utility functions for terminal interaction.
