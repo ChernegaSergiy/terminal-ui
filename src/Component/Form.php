@@ -12,26 +12,51 @@ use ChernegaSergiy\TerminalUi\Terminal\Key;
  */
 class Form extends AbstractComponent
 {
-    /** @var Component[] */
+    /** @var Component[] The fields in the order they are shown. */
     private array $components = [];
+    /** @var string[] The name of each field, in the same order as $components. */
+    private array $names = [];
     private int $focusedIndex = 0;
     private bool $submitFailed = false;
 
     /**
      * Form constructor.
      * @param string $title The title of the form.
-     * @param Component[] $components An array of child components.
+     * @param array<string, Component> $fields The fields keyed by name; the name is the key of the field in getResult().
      * @param string|null $id Optional unique ID for the component.
+     * @throws \InvalidArgumentException If a field is not keyed by a non-empty string name.
      */
-    public function __construct(string $title, array $components = [], ?string $id = null)
+    public function __construct(string $title, array $fields = [], ?string $id = null)
     {
         parent::__construct($title, $id, 'form_');
-        $this->components = $components;
+
+        foreach ($fields as $name => $component) {
+            if (!is_string($name)) {
+                throw new \InvalidArgumentException('Form fields must be keyed by name, e.g. [\'age\' => $input]; use add() for numeric names.');
+            }
+            $this->add($name, $component);
+        }
     }
 
-    public function addComponent(Component $component): void
+    /**
+     * Adds a field to the end of the form.
+     * @param string $name The name of the field: its key in the form's result.
+     * @param Component $component The component that collects the value.
+     * @throws \InvalidArgumentException If the name is empty or already used by another field.
+     */
+    public function add(string $name, Component $component): static
     {
+        if ($name === '') {
+            throw new \InvalidArgumentException('A form field needs a non-empty name.');
+        }
+        if (in_array($name, $this->names, true)) {
+            throw new \InvalidArgumentException("The form already has a field named '{$name}'.");
+        }
+
+        $this->names[] = $name;
         $this->components[] = $component;
+
+        return $this;
     }
 
     public function handleKey(Key|string $key): void
@@ -100,8 +125,8 @@ class Form extends AbstractComponent
     public function getResult(): mixed
     {
         $results = [];
-        foreach ($this->components as $component) {
-            $results[$component->getId()] = $component->getResult();
+        foreach ($this->components as $index => $component) {
+            $results[$this->names[$index]] = $component->getResult();
         }
         return $results;
     }
