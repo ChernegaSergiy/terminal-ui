@@ -245,9 +245,9 @@ Here's a simple example demonstrating how to create a form with `Slider` and `Nu
 require_once __DIR__ . '/vendor/autoload.php';
 
 use ChernegaSergiy\TerminalUi\Component\Form;
+use ChernegaSergiy\TerminalUi\Component\NumberInput;
 use ChernegaSergiy\TerminalUi\Component\Slider;
 use ChernegaSergiy\TerminalUi\Runner;
-use ChernegaSergiy\TerminalUi\Component\NumberInput;
 use ChernegaSergiy\TerminalUi\Validator\CallbackValidator;
 
 // Create components
