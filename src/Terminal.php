@@ -16,14 +16,24 @@ class Terminal
 
     /**
      * Enables raw mode for terminal input.
+     * @throws \RuntimeException On Windows, when STDIN is not a terminal, or when stty is unavailable.
      */
     public static function enableRawMode() : void
     {
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            return;
+        if (PHP_OS_FAMILY === 'Windows') {
+            throw new \RuntimeException('Windows is not supported: reading single key presses requires stty.');
         }
+        if (!stream_isatty(STDIN)) {
+            throw new \RuntimeException('STDIN is not an interactive terminal.');
+        }
+
+        $settings = shell_exec('stty -g 2>/dev/null');
+        if (!is_string($settings) || trim($settings) === '') {
+            throw new \RuntimeException('Unable to read terminal settings with stty.');
+        }
+
         self::registerRestoreHandlers();
-        self::$stty_settings = shell_exec('stty -g');
+        self::$stty_settings = $settings;
         shell_exec('stty -icanon -echo');
     }
 
