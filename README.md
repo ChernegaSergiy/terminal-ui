@@ -123,6 +123,32 @@ An interactive component for capturing a text string from the user. It supports 
     -   `$placeholder` (string|null): Optional. Placeholder text shown when input is empty.
     -   `$maxLength` (int|null): Optional. Maximum allowed character length.
 
+### `MultiSelect` Class
+
+An interactive multiple-selection menu component. Users navigate through options with arrow keys (`Up`/`Down`) or `Home`/`End`, toggle items with `Space`, toggle all items with `a`, confirm with `Enter`, or cancel with `Esc`. Supports default selections as well as minimum and maximum selection limits.
+
+-   **Constructor**:
+    ```php
+    public function __construct(
+        string $title,
+        array $options,
+        array $default = [],
+        ?int $min = null,
+        ?int $max = null,
+        string $instruction = 'Use ↑↓ to navigate, Space to toggle, a to toggle all, Enter to confirm, ESC to cancel'
+    )
+    ```
+    -   `$title` (string): The title/prompt displayed above the list.
+    -   `$options` (array): Array of options (indexed list or associative `['key' => 'Label']`).
+    -   `$default` (array): Array of keys/indices pre-selected by default.
+    -   `$min` (int|null): Optional. Minimum required number of selected items.
+    -   `$max` (int|null): Optional. Maximum allowed number of selected items.
+    -   `$instruction` (string): Optional navigation instructions text.
+
+-   **Results**:
+    -   `getResult(): ?array`: Returns array of selected keys/indices, or `null` if cancelled with `Esc`.
+    -   `getSelectedValues(): array`: Returns array of selected label values.
+
 ### Validation with `ValidatorInterface`
 
 To keep UI components clean and free of business logic, validation is handled externally via the `ValidatorInterface`. This allows developers to define custom validation rules and error messages.
