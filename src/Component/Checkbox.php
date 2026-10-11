@@ -22,7 +22,7 @@ class Checkbox extends AbstractComponent
         string $label,
         bool $default_checked = false,
         ?string $id = null,
-        string $instruction = 'Натисніть Пробіл для перемикання, Enter для підтвердження'
+        string $instruction = 'Press Space to toggle, Enter to confirm'
     ) {
         parent::__construct($label, $id, 'checkbox_');
         $this->checked = $default_checked;
