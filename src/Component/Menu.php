@@ -24,7 +24,7 @@ class Menu extends AbstractComponent
         string $title,
         array $items,
         ?string $id = null,
-        string $navigationInstruction = 'Використовуйте ↑↓ для навігації, Enter для вибору, ESC для виходу'
+        string $navigationInstruction = 'Use ↑↓ to navigate, Enter to select, ESC to cancel'
     ) {
         parent::__construct($title, $id, 'menu_');
         $this->items = $items;
