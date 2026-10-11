@@ -14,6 +14,7 @@ class Form implements Component
     private array $components = [];
     private int $focusedIndex = 0;
     private bool $done = false;
+    private bool $submitFailed = false;
     private string $id;
 
     /**
@@ -36,6 +37,8 @@ class Form implements Component
 
     public function handleKey(string $key): void
     {
+        $this->submitFailed = false;
+
         if (empty($this->components)) {
             $this->done = true; // Nothing to do if no components
             return;
@@ -58,6 +61,10 @@ class Form implements Component
                     // If it's the last component, check if the whole form is valid
                     if ($this->isValid()) {
                         $this->done = true;
+                    } else {
+                        // Do not submit: send the user to the first field that needs fixing.
+                        $this->submitFailed = true;
+                        $this->focusFirstInvalid();
                     }
                 } else {
                     // Move to the next component
@@ -68,6 +75,16 @@ class Form implements Component
         } else {
             // Pass other keys to the currently focused component
             $current_component->handleKey($key);
+        }
+    }
+
+    private function focusFirstInvalid(): void
+    {
+        foreach ($this->components as $index => $component) {
+            if (!$component->isValid()) {
+                $this->focusedIndex = $index;
+                return;
+            }
         }
     }
 
@@ -121,7 +138,7 @@ class Form implements Component
         }
 
         echo "\n  \033[90mВикористовуйте ↑↓/Tab для навігації, Enter для підтвердження/переходу\033[0m\n";
-        if (!$this->isValid() && $this->done) {
+        if ($this->submitFailed) {
             echo "  \033[31m✗ Будь ласка, виправте помилки у формі.\033[0m\n";
         }
     }
