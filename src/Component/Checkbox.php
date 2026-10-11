@@ -43,12 +43,11 @@ class Checkbox extends AbstractComponent
         return $this->checked;
     }
 
-    public function render(): void
+    public function render(): string
     {
-
         $checkbox_char = $this->checked ? '[x]' : '[ ]';
 
-        echo "\n  {$checkbox_char} {$this->label}\n\n";
-        echo "  \033[90m{$this->instruction}\033[0m\n";
+        return "\n  {$checkbox_char} {$this->label}\n\n"
+            . "  \033[90m{$this->instruction}\033[0m\n";
     }
 }

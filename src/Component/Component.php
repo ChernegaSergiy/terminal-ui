@@ -10,9 +10,10 @@ namespace ChernegaSergiy\TerminalUi\Component;
 interface Component
 {
     /**
-     * Renders the component's current state to the screen.
+     * Renders the component's current state.
+     * @return string The frame to print; the component itself never writes to the output.
      */
-    public function render(): void;
+    public function render(): string;
 
     /**
      * Handles a key press and updates the component's state.

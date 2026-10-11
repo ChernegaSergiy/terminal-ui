@@ -55,21 +55,20 @@ class Menu extends AbstractComponent
     }
 
     /**
-     * Renders the menu on the terminal.
+     * Renders the menu.
      */
-    public function render(): void
+    public function render(): string
     {
-
-        echo "\n  \033[1;36m{$this->label}\033[0m\n\n";
+        $out = "\n  \033[1;36m{$this->label}\033[0m\n\n";
 
         foreach ($this->items as $index => $item) {
             if ($index === $this->selected) {
-                echo "  \033[1;32m▶ {$item}\033[0m\n";
+                $out .= "  \033[1;32m▶ {$item}\033[0m\n";
             } else {
-                echo "    {$item}\n";
+                $out .= "    {$item}\n";
             }
         }
 
-        echo "\n  \033[90m{$this->navigationInstruction}\033[0m\n";
+        return $out . "\n  \033[90m{$this->navigationInstruction}\033[0m\n";
     }
 }

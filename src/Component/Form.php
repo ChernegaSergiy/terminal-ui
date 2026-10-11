@@ -103,24 +103,22 @@ class Form extends AbstractComponent
         return $results;
     }
 
-    public function render(): void
+    public function render(): string
     {
-        echo "\n  \033[1;36m{$this->label}\033[0m\n\n";
+        $out = "\n  \033[1;36m{$this->label}\033[0m\n\n";
 
         foreach ($this->components as $index => $component) {
             // Highlight the focused component
-            if ($index === $this->focusedIndex) {
-                echo "  \033[1;33m▶ "; // Highlight focused component
-            } else {
-                echo "    ";
-            }
-            $component->render(); // Each component renders itself
-            echo "\033[0m\n"; // Reset color and add newline after each component's render
+            $out .= $index === $this->focusedIndex ? "  \033[1;33m▶ " : "    ";
+            $out .= $component->render(); // Each component renders itself
+            $out .= "\033[0m\n"; // Reset color and add newline after each component's render
         }
 
-        echo "\n  \033[90mUse ↑↓/Tab to navigate, Enter to confirm and move on\033[0m\n";
+        $out .= "\n  \033[90mUse ↑↓/Tab to navigate, Enter to confirm and move on\033[0m\n";
         if ($this->submitFailed) {
-            echo "  \033[31m✗ Please fix the errors in the form.\033[0m\n";
+            $out .= "  \033[31m✗ Please fix the errors in the form.\033[0m\n";
         }
+
+        return $out;
     }
 }

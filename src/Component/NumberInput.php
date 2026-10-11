@@ -59,15 +59,17 @@ class NumberInput extends AbstractComponent
     }
 
     /**
-     * Renders the interactive input field on the terminal.
+     * Renders the input field.
      */
-    public function render(): void
+    public function render(): string
     {
-        echo "\n  {$this->label}\n\n";
-        echo "  \033[1;33m{$this->current_value}_\033[0m\n\n";
+        $out = "\n  {$this->label}\n\n"
+            . "  \033[1;33m{$this->current_value}_\033[0m\n\n";
 
         if ($this->errorMessage !== null) {
-            echo "  \033[31m✗ {$this->errorMessage}\033[0m\n";
+            $out .= "  \033[31m✗ {$this->errorMessage}\033[0m\n";
         }
+
+        return $out;
     }
 }

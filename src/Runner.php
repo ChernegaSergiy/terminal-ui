@@ -46,6 +46,6 @@ class Runner
     private static function draw(Component $component): void
     {
         Terminal::clearScreen();
-        $component->render();
+        echo $component->render();
     }
 }

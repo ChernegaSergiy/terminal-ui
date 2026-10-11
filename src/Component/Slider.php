@@ -86,12 +86,11 @@ class Slider extends AbstractComponent
     }
 
     /**
-     * Renders the slider on the terminal.
+     * Renders the slider.
      */
-    public function render(): void
+    public function render(): string
     {
-
-        echo "\n  {$this->label}\n\n";
+        $out = "\n  {$this->label}\n\n";
 
         // Progress bar
         $bar_width = 50;
@@ -99,15 +98,17 @@ class Slider extends AbstractComponent
         $percentage = $range > 0 ? ($this->value - $this->min) / $range : 1.0;
         $filled = (int) ($bar_width * $percentage);
 
-        echo "  \033[36m";
-        echo str_repeat("█", $filled);
-        echo "\033[90m";
-        echo str_repeat("░", $bar_width - $filled);
-        echo "\033[0m\n\n";
+        $out .= "  \033[36m"
+            . str_repeat("█", $filled)
+            . "\033[90m"
+            . str_repeat("░", $bar_width - $filled)
+            . "\033[0m\n\n";
 
-        echo "  \033[1;33m{$this->value}\033[0m / {$this->max}\n\n";
+        $out .= "  \033[1;33m{$this->value}\033[0m / {$this->max}\n\n";
 
-        echo "  \033[90m{$this->changeValueInstruction}\033[0m\n";
-        echo "  \033[90m{$this->quickInputInstruction}\033[0m\n";
+        $out .= "  \033[90m{$this->changeValueInstruction}\033[0m\n";
+        $out .= "  \033[90m{$this->quickInputInstruction}\033[0m\n";
+
+        return $out;
     }
 }
