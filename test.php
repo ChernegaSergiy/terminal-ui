@@ -497,13 +497,14 @@ function runInteractiveDemo(): void
     // 1. Interactive Menu Demo
     $menu = new Menu('Тест меню: Оберіть режим роботи', [
         'Швидкий тест слайдера та прапорця',
+        'Тест множинного вибору (MultiSelect)',
         'Повна форма конфігурації (Form)',
         'Вийти з тесту',
     ]);
 
     $choice = Runner::run($menu);
 
-    if ($choice === null || $choice === 2) {
+    if ($choice === null || $choice === 3) {
         echo "Тестування завершено (скасовано користувачем).\n";
         return;
     }
@@ -516,6 +517,23 @@ function runInteractiveDemo(): void
         $checkbox = new Checkbox('Увімкнути турбо-режим', true);
         $turbo = Runner::run($checkbox);
         echo "Турбо-режим: " . ($turbo ? 'ТАК' : 'НІ') . "\n";
+        return;
+    }
+
+    if ($choice === 1) {
+        $multiSelect = new MultiSelect('Оберіть необхідні модулі для встановлення', [
+            'db'    => 'База даних (PostgreSQL)',
+            'cache' => 'Кеш (Redis)',
+            'queue' => 'Черги повідомлень (RabbitMQ)',
+            'auth'  => 'Модуль автентифікації (JWT)',
+        ], default: ['db', 'auth'], min: 1);
+
+        $selected = Runner::run($multiSelect);
+        if ($selected === null) {
+            echo "Вибір скасовано.\n";
+        } else {
+            echo "Обрані модулі: " . implode(', ', $selected) . "\n";
+        }
         return;
     }
 
@@ -542,7 +560,13 @@ function runInteractiveDemo(): void
 
     echo "\n=== РЕЗУЛЬТАТИ ТЕСТОВОЇ ФОРМИ ===\n";
     foreach ($results as $field => $val) {
-        $valFormatted = is_bool($val) ? ($val ? 'true' : 'false') : (string) $val;
+        if (is_bool($val)) {
+            $valFormatted = $val ? 'true' : 'false';
+        } elseif (is_array($val)) {
+            $valFormatted = '[' . implode(', ', $val) . ']';
+        } else {
+            $valFormatted = (string) $val;
+        }
         echo "  [{$field}]: {$valFormatted}\n";
     }
     echo "=================================\n";
