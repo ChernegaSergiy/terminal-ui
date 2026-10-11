@@ -10,6 +10,9 @@ namespace ChernegaSergiy\TerminalUi;
 class Terminal
 {
     private static $stty_settings = null;
+    private static bool $cursorHidden = false;
+    private static bool $alternativeScreen = false;
+    private static bool $restoreRegistered = false;
 
     /**
      * Enables raw mode for terminal input.
@@ -19,8 +22,50 @@ class Terminal
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
             return;
         }
+        self::registerRestoreHandlers();
         self::$stty_settings = shell_exec('stty -g');
         shell_exec('stty -icanon -echo');
+    }
+
+    /**
+     * Restores everything this class has changed: input mode, cursor
+     * visibility and the alternative screen. Safe to call several times.
+     */
+    public static function restore() : void
+    {
+        if (self::$alternativeScreen) {
+            self::exitAlternativeScreen();
+        }
+        if (self::$cursorHidden) {
+            self::showCursor();
+        }
+        self::disableRawMode();
+    }
+
+    /**
+     * Makes sure the terminal is restored when the script exits through
+     * exit(), a fatal error or a termination signal, none of which run
+     * finally blocks.
+     */
+    private static function registerRestoreHandlers() : void
+    {
+        if (self::$restoreRegistered) {
+            return;
+        }
+        self::$restoreRegistered = true;
+
+        register_shutdown_function([self::class, 'restore']);
+
+        if (function_exists('pcntl_signal') && function_exists('pcntl_async_signals')) {
+            pcntl_async_signals(true);
+            $handler = static function (int $signal): void {
+                self::restore();
+                exit(128 + $signal);
+            };
+            foreach ([SIGINT, SIGTERM, SIGHUP] as $signal) {
+                pcntl_signal($signal, $handler);
+            }
+        }
     }
 
     /**
@@ -29,7 +74,8 @@ class Terminal
     public static function disableRawMode() : void
     {
         if (self::$stty_settings !== null) {
-            shell_exec('stty ' . self::$stty_settings);
+            shell_exec('stty ' . trim(self::$stty_settings));
+            self::$stty_settings = null;
         }
     }
 
@@ -86,6 +132,7 @@ class Terminal
     public static function hideCursor() : void
     {
         echo "\033[?25l";
+        self::$cursorHidden = true;
     }
 
     /**
@@ -94,6 +141,7 @@ class Terminal
     public static function showCursor() : void
     {
         echo "\033[?25h";
+        self::$cursorHidden = false;
     }
 
     /**
@@ -102,6 +150,7 @@ class Terminal
     public static function enterAlternativeScreen() : void
     {
         echo "\033[?1049h";
+        self::$alternativeScreen = true;
     }
 
     /**
@@ -110,5 +159,6 @@ class Terminal
     public static function exitAlternativeScreen() : void
     {
         echo "\033[?1049l";
+        self::$alternativeScreen = false;
     }
 }
