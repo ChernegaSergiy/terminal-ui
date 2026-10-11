@@ -32,7 +32,7 @@ $passwordValidator = new CallbackValidator(static function (string $val): ?strin
 $loginForm = new Form('Вхід до облікового запису', [
     'email' => new TextInput('Електронна пошта', placeholder: 'user@example.com', validator: $emailValidator),
     'password' => new PasswordInput('Пароль', placeholder: 'Введіть пароль', validator: $passwordValidator),
-    'remember' => new Checkbox('Запам\'ятати сесію на цьому пристрої', default: true),
+    'remember' => new Checkbox('Запам\'ятати сесію на цьому пристрої', true),
 ]);
 
 $results = Runner::run($loginForm);
