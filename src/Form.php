@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ChernegaSergiy\TerminalUI;
+namespace ChernegaSergiy\TerminalUi;
 
 /**
  * A component that manages a collection of other components, allowing navigation and submission.

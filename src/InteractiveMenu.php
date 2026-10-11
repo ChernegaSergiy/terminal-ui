@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ChernegaSergiy\TerminalUI;
+namespace ChernegaSergiy\TerminalUi;
 
 /**
  * Provides an interactive menu for terminal applications.

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace ChernegaSergiy\TerminalUI;
+namespace ChernegaSergiy\TerminalUi;
 
-use ChernegaSergiy\TerminalUI\Validator\ValidatorInterface;
+use ChernegaSergiy\TerminalUi\Validator\ValidatorInterface;
 
 /**
  * Provides an interactive input field for terminal applications.
