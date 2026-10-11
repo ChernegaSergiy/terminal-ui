@@ -16,12 +16,12 @@ use ChernegaSergiy\TerminalUi\Validator\ValidatorInterface;
  */
 class TextInput extends AbstractComponent
 {
-    private string $value;
-    private int $cursorPosition;
-    private ?string $errorMessage = null;
-    private ?ValidatorInterface $validator;
-    private ?string $placeholder;
-    private ?int $maxLength;
+    protected string $value;
+    protected int $cursorPosition;
+    protected ?string $errorMessage = null;
+    protected ?ValidatorInterface $validator;
+    protected ?string $placeholder;
+    protected ?int $maxLength;
 
     /**
      * @param string                  $prompt      Human-readable prompt/label displayed above the input.
