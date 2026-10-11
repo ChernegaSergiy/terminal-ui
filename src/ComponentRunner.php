@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ChernegaSergiy\TerminalUi;
 
+use ChernegaSergiy\TerminalUi\Component\Component;
 use ChernegaSergiy\TerminalUi\Terminal\Terminal;
 
 /**

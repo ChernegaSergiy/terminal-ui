@@ -128,10 +128,10 @@ Here's a simple example demonstrating how to create a form with `SliderInput` an
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use ChernegaSergiy\TerminalUi\Form;
-use ChernegaSergiy\TerminalUi\SliderInput;
+use ChernegaSergiy\TerminalUi\Component\Form;
+use ChernegaSergiy\TerminalUi\Component\SliderInput;
 use ChernegaSergiy\TerminalUi\ComponentRunner;
-use ChernegaSergiy\TerminalUi\InteractiveInput;
+use ChernegaSergiy\TerminalUi\Component\InteractiveInput;
 use ChernegaSergiy\TerminalUi\Validator\CallbackValidator;
 
 // Create components

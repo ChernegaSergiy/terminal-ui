@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ChernegaSergiy\TerminalUi;
+namespace ChernegaSergiy\TerminalUi\Component;
 
 /**
  * Provides an interactive slider input for terminal applications.

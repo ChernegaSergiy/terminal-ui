@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ChernegaSergiy\TerminalUi;
+namespace ChernegaSergiy\TerminalUi\Component;
 
 /**
  * Interface for interactive terminal components.

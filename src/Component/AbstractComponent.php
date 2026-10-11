@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ChernegaSergiy\TerminalUi;
+namespace ChernegaSergiy\TerminalUi\Component;
 
 /**
  * Base class holding the state every component shares: its label, a unique ID
