@@ -299,6 +299,28 @@ php my_form_app.php
 
 This will launch the interactive form, allowing you to navigate between components, input values, and see the collected results upon completion.
 
+## Ready-to-Run Examples
+
+The repository includes a dedicated [`examples/`](examples) directory with interactive CLI scenarios:
+
+- **Login Form ([`examples/login-form.php`](examples/login-form.php))**:
+  Demonstrates form aggregation with text inputs, masked passwords, checkboxes, and validation rules:
+  ```bash
+  php examples/login-form.php
+  ```
+
+- **Interactive Menu ([`examples/interactive-menu.php`](examples/interactive-menu.php))**:
+  Demonstrates a console navigation loop with options, action dispatching, and cancellation:
+  ```bash
+  php examples/interactive-menu.php
+  ```
+
+- **Setup Wizard ([`examples/wizard.php`](examples/wizard.php))**:
+  Demonstrates a step-by-step interactive CLI setup process sequentially composing text fields, searchable dropdowns, multi-select checkboxes, and range sliders:
+  ```bash
+  php examples/wizard.php
+  ```
+
 ## Contributing
 
 Contributions are welcome and appreciated! Here's how you can contribute:
