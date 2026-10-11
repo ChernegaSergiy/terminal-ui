@@ -13,12 +13,30 @@ namespace ChernegaSergiy\TerminalUi\Terminal;
  */
 final class Ansi
 {
-    public const CYAN = '36';
+    public const RESET = '0';
+    public const BOLD = '1';
+    public const DIM = '2';
+    public const ITALIC = '3';
+    public const UNDERLINE = '4';
+    public const INVERSE = '7';
+
+    public const BLACK = '30';
     public const RED = '31';
+    public const GREEN = '32';
+    public const YELLOW = '33';
+    public const BLUE = '34';
+    public const MAGENTA = '35';
+    public const CYAN = '36';
+    public const WHITE = '37';
     public const GRAY = '90';
-    public const BOLD_CYAN = '1;36';
+
+    public const BOLD_RED = '1;31';
     public const BOLD_GREEN = '1;32';
     public const BOLD_YELLOW = '1;33';
+    public const BOLD_BLUE = '1;34';
+    public const BOLD_MAGENTA = '1;35';
+    public const BOLD_CYAN = '1;36';
+    public const BOLD_WHITE = '1;37';
 
     private static ?bool $enabled = null;
 
