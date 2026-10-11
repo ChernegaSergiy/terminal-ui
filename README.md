@@ -182,3 +182,7 @@ php my_form_app.php
 ```
 
 This will launch the interactive form, allowing you to navigate between components, input values, and see the collected results upon completion.
+
+## License
+
+This library is licensed under the CSSM Unlimited License v2.0 (CSSM-ULv2). See the [LICENSE](LICENSE) file for details.
