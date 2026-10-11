@@ -61,6 +61,9 @@ class Slider extends AbstractComponent
             $this->value = $key === Key::Left
                 ? max($this->min, $this->value - $this->step)
                 : min($this->max, $this->value + $this->step);
+        } elseif ($key === Key::Home || $key === Key::End) {
+            $this->typed = '';
+            $this->value = $key === Key::Home ? $this->min : $this->max;
         } elseif ($key === Key::Enter) {
             $this->done = true;
         } elseif (is_string($key) && ctype_digit($key)) {
