@@ -76,7 +76,7 @@ if (null === $workers) {
 }
 
 // Крок 5: Підтвердження запуску (Checkbox)
-$confirmCheck = new Checkbox('Крок 5/5: Запустити встановлення залежностей автоматично?', default: true);
+$confirmCheck = new Checkbox('Крок 5/5: Запустити встановлення залежностей автоматично?', true);
 $autoInstall = Runner::run($confirmCheck);
 if (null === $autoInstall) {
     echo Ansi::style(Ansi::YELLOW, "\nМайстер налаштувань скасовано.\n");
