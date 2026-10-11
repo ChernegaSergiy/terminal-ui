@@ -37,6 +37,7 @@ use ChernegaSergiy\TerminalUi\Component\Menu;
 use ChernegaSergiy\TerminalUi\Component\MultiSelect;
 use ChernegaSergiy\TerminalUi\Component\NumberInput;
 use ChernegaSergiy\TerminalUi\Component\PasswordInput;
+use ChernegaSergiy\TerminalUi\Component\SearchSelect;
 use ChernegaSergiy\TerminalUi\Component\Slider;
 use ChernegaSergiy\TerminalUi\Component\TextInput;
 use ChernegaSergiy\TerminalUi\Runner;
@@ -471,9 +472,102 @@ $t->assert($validMs->isDone(), 'Completes when selections satisfy min and max');
 $t->assertSame(['opt1', 'opt2'], $validMs->getResult(), 'Result contains valid selections');
 
 // -----------------------------------------------------------------------------
-// 10. Form Component Tests
+// 10. SearchSelect Component Tests
 // -----------------------------------------------------------------------------
-$t->section('10. Component\\Form (Composite Component)');
+$t->section('10. Component\\SearchSelect');
+
+$cities = [
+    'kyiv'  => 'Київ',
+    'lviv'  => 'Львів',
+    'odesa' => 'Одеса',
+    'khark' => 'Харків',
+    'dnipr' => 'Дніпро',
+    'vin'   => 'Вінниця',
+    'polt'  => 'Полтава',
+    'chern' => 'Чернігів',
+];
+
+$ss = new SearchSelect('Оберіть місто', $cities, limit: 3);
+$t->assertSame('', $ss->getQuery(), 'Initial query is empty');
+$t->assertSame(0, $ss->getSelectedIndex(), 'Initial selectedIndex is 0');
+$t->assertSame(array_keys($cities), $ss->getFilteredKeys(), 'All keys present initially');
+$t->assertSame('kyiv', $ss->getResult(), 'Initial result is first key');
+$t->assertSame('Київ', $ss->getSelectedValue(), 'Initial selected value is first label');
+$t->assert(!$ss->isDone(), 'SearchSelect starts not done');
+
+// Typing query with UTF-8 characters
+$ss->handleKey('Л');
+$ss->handleKey('ь');
+$ss->handleKey('в');
+$t->assertSame('Льв', $ss->getQuery(), 'Query correctly records UTF-8 typing');
+$t->assertSame(['lviv'], $ss->getFilteredKeys(), 'Filtered keys match query "Льв"');
+$t->assertSame('lviv', $ss->getResult(), 'Result reflects filtered item');
+$t->assertSame('Львів', $ss->getSelectedValue(), 'Selected value reflects filtered label');
+
+// Backspace
+$ss->handleKey(Key::Backspace);
+$t->assertSame('Ль', $ss->getQuery(), 'Backspace removes last UTF-8 character');
+$ss->handleKey(Key::Backspace);
+$ss->handleKey(Key::Backspace);
+$t->assertSame('', $ss->getQuery(), 'Backspace empties the query');
+$t->assertSame(count($cities), count($ss->getFilteredKeys()), 'All items restored after emptying query');
+
+// Navigation (Down, Up, Home, End)
+$ss->handleKey(Key::Down);
+$t->assertSame(1, $ss->getSelectedIndex(), 'Down moves selectedIndex down');
+$ss->handleKey(Key::Down);
+$t->assertSame(2, $ss->getSelectedIndex(), 'Down moves selectedIndex down again');
+$ss->handleKey(Key::Up);
+$t->assertSame(1, $ss->getSelectedIndex(), 'Up moves selectedIndex up');
+$ss->handleKey(Key::End);
+$t->assertSame(count($cities) - 1, $ss->getSelectedIndex(), 'End jumps to last item');
+$ss->handleKey(Key::Down);
+$t->assertSame(count($cities) - 1, $ss->getSelectedIndex(), 'Down does not exceed bounds');
+$ss->handleKey(Key::Home);
+$t->assertSame(0, $ss->getSelectedIndex(), 'Home jumps to first item');
+$ss->handleKey(Key::Up);
+$t->assertSame(0, $ss->getSelectedIndex(), 'Up does not exceed bounds');
+
+// Search by key
+$ss->handleKey('d');
+$ss->handleKey('n');
+$t->assertSame(['dnipr'], $ss->getFilteredKeys(), 'Matches option key as well as label');
+$t->assertSame('dnipr', $ss->getResult(), 'Selected key is dnipr');
+$t->assertSame('Дніпро', $ss->getSelectedValue(), 'Selected value is Дніпро');
+
+// Enter confirmation
+$ss->handleKey(Key::Enter);
+$t->assert($ss->isDone(), 'Enter marks component as done');
+$t->assert(!$ss->isCancelled(), 'Component is not cancelled');
+$t->assertSame('dnipr', $ss->getResult(), 'Confirmed result is dnipr');
+
+// Esc cancellation
+$cancelSs = new SearchSelect('Місто', $cities);
+$cancelSs->handleKey(Key::Esc);
+$t->assert($cancelSs->isDone(), 'Esc marks component as done');
+$t->assert($cancelSs->isCancelled(), 'isCancelled returns true');
+$t->assertSame(null, $cancelSs->getResult(), 'Cancelled component result is null');
+$t->assertSame(null, $cancelSs->getSelectedValue(), 'Cancelled component selected value is null');
+
+// No match behavior
+$noMatch = new SearchSelect('Пошук', ['a' => 'Alpha', 'b' => 'Beta']);
+$noMatch->handleKey('z');
+$noMatch->handleKey('z');
+$noMatch->handleKey('z');
+$t->assertSame([], $noMatch->getFilteredKeys(), 'No matches found for "zzz"');
+$t->assertSame(null, $noMatch->getResult(), 'Result is null when no matches exist');
+$noMatch->handleKey(Key::Enter);
+$t->assert(!$noMatch->isDone(), 'Enter does not complete when there are no matches');
+$t->assert(str_contains($noMatch->render(), '(No matches found)'), 'Render shows no matches message');
+
+// Render scrolling & window indicator
+$scrollSs = new SearchSelect('Міста', $cities, limit: 3);
+$t->assert(str_contains($scrollSs->render(), 'Showing 3 of 8 matches'), 'Render shows pagination indicator');
+
+// -----------------------------------------------------------------------------
+// 11. Form Component Tests
+// -----------------------------------------------------------------------------
+$t->section('11. Component\\Form (Composite Component)');
 
 
 // Form constructor validation
