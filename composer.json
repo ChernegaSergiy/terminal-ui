@@ -17,6 +17,6 @@
             "ChernegaSergiy\\TerminalUi\\": "src/"
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true
 }
