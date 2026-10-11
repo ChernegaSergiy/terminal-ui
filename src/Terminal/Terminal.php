@@ -14,6 +14,9 @@ class Terminal
     private static bool $alternativeScreen = false;
     private static bool $restoreRegistered = false;
 
+    /** How long to wait (in microseconds) for the rest of an escape sequence before reading ESC as the Esc key. */
+    private const ESCAPE_TIMEOUT_US = 50000;
+
     /**
      * Enables raw mode for terminal input.
      * @throws \RuntimeException On Windows, when STDIN is not a terminal, or when stty is unavailable.
@@ -91,31 +94,133 @@ class Terminal
 
     /**
      * Reads a single key press from the terminal.
+     *
+     * Input is consumed byte by byte, so text that arrives in one piece (a paste, fast typing) is
+     * returned key by key, escape sequences are never cut in the middle and multi-byte UTF-8
+     * characters come back whole. Escape sequences the library does not know are skipped.
+     *
      * @return Key|string A Key case for arrows, Enter, Esc, Tab and Backspace, otherwise the typed character itself.
      * @throws \RuntimeException If STDIN is closed (EOF).
      */
     public static function readKey() : Key|string
     {
-        $key = fread(STDIN, 3);
+        while (true) {
+            $byte = self::readByte();
+            if ($byte === null) {
+                throw new \RuntimeException('STDIN was closed while waiting for a key press.');
+            }
 
-        if ($key === false || $key === '') {
-            throw new \RuntimeException('STDIN was closed while waiting for a key press.');
+            if ($byte === "\033") {
+                $key = self::readEscapeSequence();
+                if ($key !== null) {
+                    return $key;
+                }
+                continue; // An unknown sequence: wait for the next key.
+            }
+
+            if ($byte === "\n" || $byte === "\r") return Key::Enter;
+            if ($byte === "\x7f" || $byte === "\x08") return Key::Backspace;
+            if ($byte === "\t") return Key::Tab;
+
+            $code = ord($byte);
+            if ($code >= 0x80 && $code < 0xC0) {
+                continue; // A stray UTF-8 continuation byte is not a key.
+            }
+            if ($code >= 0xC0) {
+                return $byte . self::readContinuationBytes($code >= 0xF0 ? 3 : ($code >= 0xE0 ? 2 : 1));
+            }
+
+            return $byte;
+        }
+    }
+
+    /**
+     * Reads the rest of an escape sequence after its leading ESC byte.
+     * @return Key|null The key it stands for; Key::Esc when ESC was pressed on its own; null for unknown sequences.
+     */
+    private static function readEscapeSequence() : ?Key
+    {
+        if (!self::inputPending()) {
+            return Key::Esc;
         }
 
-        if ($key === "\033[A") return Key::Up;
-        if ($key === "\033[B") return Key::Down;
-        if ($key === "\033[C") return Key::Right;
-        if ($key === "\033[D") return Key::Left;
+        $introducer = self::readByte();
+        if ($introducer === 'O') {
+            $final = self::inputPending() ? self::readByte() : null;
+            return $final === null ? null : self::mapCsi('', $final);
+        }
+        if ($introducer !== '[') {
+            return null; // Alt+key and other sequences are not supported.
+        }
 
-        if ($key === "\n" || $key === "\r") return Key::Enter;
+        // A CSI sequence: parameter bytes, then one final byte in the range @ to ~.
+        $params = '';
+        while (self::inputPending()) {
+            $byte = self::readByte();
+            if ($byte === null) {
+                return null;
+            }
+            if ($byte >= '@' && $byte <= '~') {
+                return self::mapCsi($params, $byte);
+            }
+            $params .= $byte;
+        }
 
-        if ($key === "\x7f" || $key === "\x08") return Key::Backspace;
+        return null;
+    }
 
-        if ($key === "\033") return Key::Esc;
+    /**
+     * Maps a CSI/SS3 sequence to a key. Modifier parameters (e.g. Ctrl in "ESC[1;5A") are ignored.
+     */
+    private static function mapCsi(string $params, string $final) : ?Key
+    {
+        return match ($final) {
+            'A' => Key::Up,
+            'B' => Key::Down,
+            'C' => Key::Right,
+            'D' => Key::Left,
+            default => null,
+        };
+    }
 
-        if ($key === "\t") return Key::Tab;
+    /**
+     * Reads $count UTF-8 continuation bytes; stops early when the input ends.
+     */
+    private static function readContinuationBytes(int $count) : string
+    {
+        $bytes = '';
+        for ($i = 0; $i < $count; $i++) {
+            $byte = self::readByte();
+            if ($byte === null) {
+                break;
+            }
+            $bytes .= $byte;
+        }
 
-        return $key;
+        return $bytes;
+    }
+
+    /**
+     * Reads one byte, blocking until it is available; null on EOF.
+     */
+    private static function readByte() : ?string
+    {
+        $byte = fread(STDIN, 1);
+
+        return ($byte === false || $byte === '') ? null : $byte;
+    }
+
+    /**
+     * Whether more input follows within a short grace period. A real escape sequence arrives in one
+     * piece, so a pause after ESC means the user pressed the Esc key itself.
+     */
+    private static function inputPending() : bool
+    {
+        $read = [STDIN];
+        $write = null;
+        $except = null;
+
+        return stream_select($read, $write, $except, 0, self::ESCAPE_TIMEOUT_US) > 0;
     }
 
     /**
