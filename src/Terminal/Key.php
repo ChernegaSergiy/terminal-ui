@@ -20,4 +20,9 @@ enum Key: string
     case Esc = 'esc';
     case Tab = 'tab';
     case Backspace = 'backspace';
+    case Delete = 'delete';
+    case Home = 'home';
+    case End = 'end';
+    case PageUp = 'page_up';
+    case PageDown = 'page_down';
 }

@@ -99,7 +99,8 @@ class Terminal
      * returned key by key, escape sequences are never cut in the middle and multi-byte UTF-8
      * characters come back whole. Escape sequences the library does not know are skipped.
      *
-     * @return Key|string A Key case for arrows, Enter, Esc, Tab and Backspace, otherwise the typed character itself.
+     * @return Key|string A Key case for arrows, Home, End, Delete, PageUp, PageDown, Enter, Esc, Tab and Backspace,
+     *                    otherwise the typed character itself.
      * @throws \RuntimeException If STDIN is closed (EOF).
      */
     public static function readKey() : Key|string
@@ -179,6 +180,16 @@ class Terminal
             'B' => Key::Down,
             'C' => Key::Right,
             'D' => Key::Left,
+            'H' => Key::Home,
+            'F' => Key::End,
+            '~' => match ((int) explode(';', $params)[0]) {
+                1, 7 => Key::Home,
+                4, 8 => Key::End,
+                3 => Key::Delete,
+                5 => Key::PageUp,
+                6 => Key::PageDown,
+                default => null,
+            },
             default => null,
         };
     }
