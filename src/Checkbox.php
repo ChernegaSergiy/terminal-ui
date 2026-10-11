@@ -7,12 +7,10 @@ namespace ChernegaSergiy\TerminalUi;
 /**
  * Provides an interactive checkbox component for terminal applications.
  */
-class Checkbox implements Component
+class Checkbox extends AbstractComponent
 {
-    private string $label;
     private bool $checked;
-    private bool $done = false;
-    private string $id;
+    private string $instruction;
 
     /**
      * Checkbox constructor.
@@ -20,17 +18,14 @@ class Checkbox implements Component
      * @param bool $default_checked The initial state of the checkbox.
      * @param string|null $id Optional unique ID for the component.
      */
-    private string $instruction;
-
     public function __construct(
         string $label,
         bool $default_checked = false,
         ?string $id = null,
         string $instruction = 'Натисніть Пробіл для перемикання, Enter для підтвердження'
     ) {
-        $this->label = $label;
+        parent::__construct($label, $id, 'checkbox_');
         $this->checked = $default_checked;
-        $this->id = $id ?? uniqid('checkbox_');
         $this->instruction = $instruction;
     }
 
@@ -43,29 +38,9 @@ class Checkbox implements Component
         }
     }
 
-    public function isDone(): bool
-    {
-        return $this->done;
-    }
-
     public function getResult(): bool
     {
         return $this->checked;
-    }
-
-    public function isValid(): bool
-    {
-        return true;
-    }
-
-    public function getLabel(): string
-    {
-        return $this->label;
-    }
-
-    public function getId(): string
-    {
-        return $this->id;
     }
 
     public function render(): void

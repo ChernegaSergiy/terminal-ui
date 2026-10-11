@@ -7,16 +7,15 @@ namespace ChernegaSergiy\TerminalUi;
 /**
  * Provides an interactive slider input for terminal applications.
  */
-class SliderInput implements Component
+class SliderInput extends AbstractComponent
 {
-    private string $label;
     private int $min;
     private int $max;
     private int $value;
     private int $step;
     private string $typed = '';
-    private bool $done = false;
-    private string $id;
+    private string $changeValueInstruction;
+    private string $quickInputInstruction;
 
     /**
      * SliderInput constructor.
@@ -28,9 +27,6 @@ class SliderInput implements Component
      * @param string|null $id Optional unique ID for the component.
      * @throws \InvalidArgumentException If $min is greater than $max or $step is less than 1.
      */
-    private string $changeValueInstruction;
-    private string $quickInputInstruction;
-
     public function __construct(
         string $label,
         int $min,
@@ -48,12 +44,11 @@ class SliderInput implements Component
             throw new \InvalidArgumentException("Slider step must be at least 1, {$step} given.");
         }
 
-        $this->label = $label;
+        parent::__construct($label, $id, 'slider_');
         $this->min = $min;
         $this->max = $max;
         $this->value = $this->clamp($default ?? $min);
         $this->step = $step;
-        $this->id = $id ?? uniqid('slider_');
         $this->changeValueInstruction = $changeValueInstruction;
         $this->quickInputInstruction = $quickInputInstruction;
     }
@@ -83,26 +78,6 @@ class SliderInput implements Component
     private function clamp(int $value): int
     {
         return min($this->max, max($this->min, $value));
-    }
-
-    public function isDone(): bool
-    {
-        return $this->done;
-    }
-
-    public function isValid(): bool
-    {
-        return true;
-    }
-
-    public function getLabel(): string
-    {
-        return $this->label;
-    }
-
-    public function getId(): string
-    {
-        return $this->id;
     }
 
     public function getResult(): mixed

@@ -7,15 +7,12 @@ namespace ChernegaSergiy\TerminalUi;
 /**
  * A component that manages a collection of other components, allowing navigation and submission.
  */
-class Form implements Component
+class Form extends AbstractComponent
 {
-    private string $title;
     /** @var Component[] */
     private array $components = [];
     private int $focusedIndex = 0;
-    private bool $done = false;
     private bool $submitFailed = false;
-    private string $id;
 
     /**
      * Form constructor.
@@ -25,9 +22,8 @@ class Form implements Component
      */
     public function __construct(string $title, array $components = [], ?string $id = null)
     {
-        $this->title = $title;
+        parent::__construct($title, $id, 'form_');
         $this->components = $components;
-        $this->id = $id ?? uniqid('form_');
     }
 
     public function addComponent(Component $component): void
@@ -88,11 +84,6 @@ class Form implements Component
         }
     }
 
-    public function isDone(): bool
-    {
-        return $this->done;
-    }
-
     public function isValid(): bool
     {
         foreach ($this->components as $component) {
@@ -101,16 +92,6 @@ class Form implements Component
             }
         }
         return true;
-    }
-
-    public function getLabel(): string
-    {
-        return $this->title;
-    }
-
-    public function getId(): string
-    {
-        return $this->id;
     }
 
     public function getResult(): mixed
@@ -124,7 +105,7 @@ class Form implements Component
 
     public function render(): void
     {
-        echo "\n  \033[1;36m{$this->title}\033[0m\n\n";
+        echo "\n  \033[1;36m{$this->label}\033[0m\n\n";
 
         foreach ($this->components as $index => $component) {
             // Highlight the focused component

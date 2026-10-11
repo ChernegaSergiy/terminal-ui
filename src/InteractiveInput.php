@@ -9,12 +9,9 @@ use ChernegaSergiy\TerminalUi\Validator\ValidatorInterface;
 /**
  * Provides an interactive input field for terminal applications.
  */
-class InteractiveInput implements Component
+class InteractiveInput extends AbstractComponent
 {
-    private string $prompt;
     private string $current_value = '';
-    private bool $done = false;
-    private string $id;
     private ?string $errorMessage = null;
     private ?ValidatorInterface $validator = null;
 
@@ -23,8 +20,7 @@ class InteractiveInput implements Component
         ?string $id = null,
         ?ValidatorInterface $validator = null
     ) {
-        $this->prompt = $prompt;
-        $this->id = $id ?? uniqid('input_');
+        parent::__construct($prompt, $id, 'input_');
         $this->validator = $validator;
     }
 
@@ -42,11 +38,6 @@ class InteractiveInput implements Component
             $this->current_value .= $key;
             $this->done = false;
         }
-    }
-
-    public function isDone(): bool
-    {
-        return $this->done;
     }
 
     public function getResult(): int
@@ -67,22 +58,12 @@ class InteractiveInput implements Component
         return $this->validator?->validate($this->current_value);
     }
 
-    public function getLabel(): string
-    {
-        return $this->prompt;
-    }
-
-    public function getId(): string
-    {
-        return $this->id;
-    }
-
     /**
      * Renders the interactive input field on the terminal.
      */
     public function render(): void
     {
-        echo "\n  {$this->prompt}\n\n";
+        echo "\n  {$this->label}\n\n";
         echo "  \033[1;33m{$this->current_value}_\033[0m\n\n";
 
         if ($this->errorMessage !== null) {
