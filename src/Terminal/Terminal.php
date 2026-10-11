@@ -213,9 +213,32 @@ class Terminal
 
     /**
      * Reads one byte, blocking until it is available; null on EOF.
+     *
+     * The wait happens in select() rather than in fread(): PHP restarts an interrupted read after a
+     * signal, so a blocking fread() would keep Ctrl+C waiting until the next key press, whereas
+     * select() is interrupted at once and lets the handlers from registerRestoreHandlers() run.
      */
     private static function readByte() : ?string
     {
+        while (true) {
+            $read = [STDIN];
+            $write = null;
+            $except = null;
+
+            error_clear_last();
+            $ready = @stream_select($read, $write, $except, null);
+
+            if ($ready === false) {
+                if (str_contains(error_get_last()['message'] ?? '', 'Interrupted')) {
+                    continue; // A signal arrived; its handler has run or is about to.
+                }
+                return null;
+            }
+            if ($ready > 0) {
+                break;
+            }
+        }
+
         $byte = fread(STDIN, 1);
 
         return ($byte === false || $byte === '') ? null : $byte;
