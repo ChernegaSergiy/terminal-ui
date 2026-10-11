@@ -22,11 +22,11 @@ All interactive elements in this library implement the `Component` interface. Th
 
 -   `getResult(): mixed`
     -   **Purpose**: Returns the final result or value collected by the component after interaction is complete.
-    -   **Details**: The return type can vary (`mixed`) depending on the component (e.g., `int` for `SliderInput`, `string` for a text input, `array` for a form).
+    -   **Details**: The return type can vary (`mixed`) depending on the component (e.g., `int` for `Slider`, `string` for a text input, `array` for a form).
 
 -   `isValid(): bool`
     -   **Purpose**: Checks if the component's current state or collected value is valid according to its internal rules.
-    -   **Details**: Returns `true` if the component's data meets its validation criteria (e.g., a number is within a specified range, a required field is not empty). Components like `InteractiveInput` delegate this check to their `ValidatorInterface`, so `isValid()` reflects whether the current value passes it.
+    -   **Details**: Returns `true` if the component's data meets its validation criteria (e.g., a number is within a specified range, a required field is not empty). Components like `NumberInput` delegate this check to their `ValidatorInterface`, so `isValid()` reflects whether the current value passes it.
 
 -   `getLabel(): string`
     -   **Purpose**: Returns a human-readable label or prompt for the component.
@@ -41,7 +41,7 @@ All interactive elements in this library implement the `Component` interface. Th
 The `Form` class serves as a powerful container and manager for multiple `Component` objects, enabling the creation of complex interactive terminal forms.
 
 -   **Responsibilities**:
-    -   **Aggregating Components**: Allows you to group various `Component` instances (e.g., `SliderInput`, `InteractiveInput`) into a single logical unit.
+    -   **Aggregating Components**: Allows you to group various `Component` instances (e.g., `Slider`, `NumberInput`) into a single logical unit.
     -   **Navigation**: Manages the focus between child components, typically allowing users to move between them using `up`/`down` arrow keys or `Tab`.
     -   **Input Handling**: Delegates key presses to the currently focused child component, allowing each component to handle its specific interactions.
     -   **Result Collection**: Once the form interaction is complete, it can collect and return the results from all its contained components.
@@ -56,7 +56,7 @@ The `Form` class serves as a powerful container and manager for multiple `Compon
     -   `$id` (string|null): Optional unique ID for the component.
     -   `$navigationInstruction` (string): Optional. The instruction message displayed for navigation (default: 'Використовуйте ↑↓ для навігації, Enter для вибору, ESC для виходу').
 
-### `SliderInput` Class
+### `Slider` Class
 
 An interactive component designed for selecting a numeric value within a defined range. Users typically adjust the value using left/right arrow keys.
 
@@ -73,9 +73,9 @@ An interactive component designed for selecting a numeric value within a defined
     -   `$changeValueInstruction` (string): Optional. The instruction message for changing the value (default: '← → для зміни значення, Enter для підтвердження').
     -   `$quickInputInstruction` (string): Optional. The instruction message for quick input (default: 'Або введіть цифру для швидкого вводу').
 
-### `InteractiveInput` Class
+### `NumberInput` Class
 
-An interactive component for capturing single-line text input from the user. It focuses on basic input handling and delegates validation to external `ValidatorInterface` implementations.
+An interactive component for capturing a number from the user: it accepts digits only (up to 3 characters) and returns an `int`. It delegates validation to external `ValidatorInterface` implementations.
 
 -   **Constructor**:
     ```php
@@ -121,7 +121,7 @@ This utility class provides a static method to run any `Component` (including a 
 
 ## Usage Example
 
-Here's a simple example demonstrating how to create a form with `SliderInput` and `InteractiveInput` components and run it, including external validation for `InteractiveInput`:
+Here's a simple example demonstrating how to create a form with `Slider` and `NumberInput` components and run it, including external validation for `NumberInput`:
 
 ```php
 <?php
@@ -129,14 +129,14 @@ Here's a simple example demonstrating how to create a form with `SliderInput` an
 require_once __DIR__ . '/vendor/autoload.php';
 
 use ChernegaSergiy\TerminalUi\Component\Form;
-use ChernegaSergiy\TerminalUi\Component\SliderInput;
+use ChernegaSergiy\TerminalUi\Component\Slider;
 use ChernegaSergiy\TerminalUi\ComponentRunner;
-use ChernegaSergiy\TerminalUi\Component\InteractiveInput;
+use ChernegaSergiy\TerminalUi\Component\NumberInput;
 use ChernegaSergiy\TerminalUi\Validator\CallbackValidator;
 
 // Create components
-$slider1 = new SliderInput('Виберіть значення для Slider 1', 0, 100, 50, 5, 'slider_one');
-$slider2 = new SliderInput('Виберіть значення для Slider 2', 10, 20, 15, 1, 'slider_two');
+$slider1 = new Slider('Виберіть значення для Slider 1', 0, 100, 50, 5, 'slider_one');
+$slider2 = new Slider('Виберіть значення для Slider 2', 10, 20, 15, 1, 'slider_two');
 
 // Create a validator for age input
 $ageValidator = new CallbackValidator(function (string $value): ?string {
@@ -153,7 +153,7 @@ $ageValidator = new CallbackValidator(function (string $value): ?string {
     return null; // Valid
 });
 
-$ageInput = new InteractiveInput('Введіть ваш вік', 'age_input', $ageValidator);
+$ageInput = new NumberInput('Введіть ваш вік', 'age_input', $ageValidator);
 
 // Create the form and add components
 $form = new Form('Налаштування програми', [

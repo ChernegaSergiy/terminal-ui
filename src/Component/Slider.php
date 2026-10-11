@@ -7,7 +7,7 @@ namespace ChernegaSergiy\TerminalUi\Component;
 /**
  * Provides an interactive slider input for terminal applications.
  */
-class SliderInput extends AbstractComponent
+class Slider extends AbstractComponent
 {
     private int $min;
     private int $max;
@@ -18,7 +18,7 @@ class SliderInput extends AbstractComponent
     private string $quickInputInstruction;
 
     /**
-     * SliderInput constructor.
+     * Slider constructor.
      * @param string $label The label for the slider.
      * @param int $min The minimum value of the slider.
      * @param int $max The maximum value of the slider.

@@ -7,9 +7,9 @@ namespace ChernegaSergiy\TerminalUi\Component;
 use ChernegaSergiy\TerminalUi\Validator\ValidatorInterface;
 
 /**
- * Provides an interactive input field for terminal applications.
+ * Provides an interactive numeric input field (digits only, up to 3 characters) for terminal applications.
  */
-class InteractiveInput extends AbstractComponent
+class NumberInput extends AbstractComponent
 {
     private string $current_value = '';
     private ?string $errorMessage = null;

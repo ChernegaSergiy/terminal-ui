@@ -7,7 +7,7 @@ namespace ChernegaSergiy\TerminalUi\Component;
 /**
  * Provides an interactive menu for terminal applications.
  */
-class InteractiveMenu extends AbstractComponent
+class Menu extends AbstractComponent
 {
     private array $items;
     private int $selected = 0;
@@ -15,7 +15,7 @@ class InteractiveMenu extends AbstractComponent
     private string $navigationInstruction;
 
     /**
-     * InteractiveMenu constructor.
+     * Menu constructor.
      * @param string $title The title of the menu.
      * @param array $items An array of menu items (strings).
      * @param string|null $id Optional unique ID for the component.
