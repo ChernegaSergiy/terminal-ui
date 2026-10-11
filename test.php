@@ -36,6 +36,7 @@ use ChernegaSergiy\TerminalUi\Component\Form;
 use ChernegaSergiy\TerminalUi\Component\Menu;
 use ChernegaSergiy\TerminalUi\Component\MultiSelect;
 use ChernegaSergiy\TerminalUi\Component\NumberInput;
+use ChernegaSergiy\TerminalUi\Component\PasswordInput;
 use ChernegaSergiy\TerminalUi\Component\Slider;
 use ChernegaSergiy\TerminalUi\Component\TextInput;
 use ChernegaSergiy\TerminalUi\Runner;
@@ -361,9 +362,62 @@ $t->assert($valEmail->isDone(), 'Valid input completes on Enter');
 $t->assertSame('user@test.com', $valEmail->getResult(), 'Result is valid email string');
 
 // -----------------------------------------------------------------------------
-// 8. MultiSelect Component Tests
+// 8. PasswordInput Component Tests
 // -----------------------------------------------------------------------------
-$t->section('8. Component\\MultiSelect');
+$t->section('8. Component\\PasswordInput');
+
+$pwd = new PasswordInput('Введіть пароль');
+$t->assertSame('', $pwd->getResult(), 'Password starts empty');
+$t->assertSame('*', $pwd->getMask(), 'Default mask is asterisk');
+$t->assert(!$pwd->isDone(), 'PasswordInput starts not done');
+
+// Typing masked characters
+$pwd->handleKey('s');
+$pwd->handleKey('e');
+$pwd->handleKey('c');
+$pwd->handleKey('r');
+$pwd->handleKey('e');
+$pwd->handleKey('t');
+$t->assertSame('secret', $pwd->getResult(), 'Secret is stored as plain text value');
+$t->assert(str_contains($pwd->render(), '******_'), 'Renders asterisks instead of plain text');
+$t->assert(!str_contains($pwd->render(), 'secret'), 'Does not leak plain text in render');
+
+// Backspace
+$pwd->handleKey(Key::Backspace);
+$t->assertSame('secre', $pwd->getResult(), 'Backspace deletes last secret character');
+$t->assert(str_contains($pwd->render(), '*****_'), 'Renders 5 asterisks after backspace');
+
+// Custom mask (silent / empty mask)
+$silentPwd = new PasswordInput('Sudo пароль', mask: '');
+$silentPwd->handleKey('p');
+$silentPwd->handleKey('a');
+$silentPwd->handleKey('s');
+$silentPwd->handleKey('s');
+$t->assertSame('pass', $silentPwd->getResult(), 'Silent input stores value');
+$t->assert(!str_contains($silentPwd->render(), '*'), 'Silent input does not render asterisks');
+$t->assert(!str_contains($silentPwd->render(), 'pass'), 'Silent input does not render plain text');
+
+// Validation & Enter
+$valPwd = new PasswordInput('Пароль', validator: new CallbackValidator(fn(string $v): ?string => strlen($v) >= 6 ? null : 'Пароль занадто короткий'));
+$valPwd->handleKey('1');
+$valPwd->handleKey('2');
+$valPwd->handleKey('3');
+$valPwd->handleKey(Key::Enter);
+$t->assert(!$valPwd->isDone(), 'Short password fails validation on Enter');
+$t->assert(str_contains($valPwd->render(), 'Пароль занадто короткий'), 'Validation error shown in render');
+
+$valPwd->handleKey('4');
+$valPwd->handleKey('5');
+$valPwd->handleKey('6');
+$t->assert($valPwd->isValid(), '6 chars password is valid');
+$valPwd->handleKey(Key::Enter);
+$t->assert($valPwd->isDone(), 'Valid password completes on Enter');
+$t->assertSame('123456', $valPwd->getResult(), 'Valid password result is returned');
+
+// -----------------------------------------------------------------------------
+// 9. MultiSelect Component Tests
+// -----------------------------------------------------------------------------
+$t->section('9. Component\\MultiSelect');
 
 $ms = new MultiSelect('Мови', ['php' => 'PHP', 'py' => 'Python', 'go' => 'Go'], default: ['php']);
 $t->assertSame(['php'], $ms->getResult(), 'Default selection is php');
@@ -417,9 +471,9 @@ $t->assert($validMs->isDone(), 'Completes when selections satisfy min and max');
 $t->assertSame(['opt1', 'opt2'], $validMs->getResult(), 'Result contains valid selections');
 
 // -----------------------------------------------------------------------------
-// 9. Form Component Tests
+// 10. Form Component Tests
 // -----------------------------------------------------------------------------
-$t->section('9. Component\\Form (Composite Component)');
+$t->section('10. Component\\Form (Composite Component)');
 
 
 // Form constructor validation
