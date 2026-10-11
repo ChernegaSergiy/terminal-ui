@@ -23,9 +23,10 @@ class SliderInput implements Component
      * @param string $label The label for the slider.
      * @param int $min The minimum value of the slider.
      * @param int $max The maximum value of the slider.
-     * @param int|null $default The default value of the slider.
+     * @param int|null $default The default value of the slider (clamped to the range).
      * @param int $step The step increment/decrement for the slider.
      * @param string|null $id Optional unique ID for the component.
+     * @throws \InvalidArgumentException If $min is greater than $max or $step is less than 1.
      */
     private string $changeValueInstruction;
     private string $quickInputInstruction;
@@ -34,16 +35,23 @@ class SliderInput implements Component
         string $label,
         int $min,
         int $max,
-        int $default = null,
+        ?int $default = null,
         int $step = 1,
         ?string $id = null,
         string $changeValueInstruction = '← → для зміни значення, Enter для підтвердження',
         string $quickInputInstruction = 'Або введіть цифру для швидкого вводу'
     ) {
+        if ($min > $max) {
+            throw new \InvalidArgumentException("Slider minimum ({$min}) must not exceed its maximum ({$max}).");
+        }
+        if ($step < 1) {
+            throw new \InvalidArgumentException("Slider step must be at least 1, {$step} given.");
+        }
+
         $this->label = $label;
         $this->min = $min;
         $this->max = $max;
-        $this->value = $default ?? $min;
+        $this->value = $this->clamp($default ?? $min);
         $this->step = $step;
         $this->id = $id ?? uniqid('slider_');
         $this->changeValueInstruction = $changeValueInstruction;
@@ -112,7 +120,8 @@ class SliderInput implements Component
 
         // Progress bar
         $bar_width = 50;
-        $percentage = ($this->value - $this->min) / ($this->max - $this->min);
+        $range = $this->max - $this->min;
+        $percentage = $range > 0 ? ($this->value - $this->min) / $range : 1.0;
         $filled = (int) ($bar_width * $percentage);
 
         echo "  \033[36m";
