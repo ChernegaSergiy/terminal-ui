@@ -605,6 +605,7 @@ function runInteractiveDemo(): void
 
     $form = new Form('Інтерактивна тестова форма бібліотеки TerminalUi', [
         'text_username' => new TextInput('Ім\'я користувача', placeholder: 'Введіть ваше ім\'я'),
+        'password' => new PasswordInput('Пароль доступу', placeholder: 'Введіть секретний пароль'),
         'slider_brightness' => new Slider('Яскравість екрана', 0, 100, 75, 5),
         'check_sound' => new Checkbox('Звукові ефекти', true),
         'number_age' => new NumberInput('Введіть вік (10-99)', $ageValidator),
