@@ -36,6 +36,7 @@ use ChernegaSergiy\TerminalUi\Component\Form;
 use ChernegaSergiy\TerminalUi\Component\Menu;
 use ChernegaSergiy\TerminalUi\Component\NumberInput;
 use ChernegaSergiy\TerminalUi\Component\Slider;
+use ChernegaSergiy\TerminalUi\Component\TextInput;
 use ChernegaSergiy\TerminalUi\Runner;
 use ChernegaSergiy\TerminalUi\Terminal\Ansi;
 use ChernegaSergiy\TerminalUi\Terminal\Key;
@@ -290,9 +291,78 @@ $smallInput->handleKey('9'); // 4th digit should be ignored
 $t->assertSame(999, $smallInput->getResult(), 'NumberInput limits input to 3 digits');
 
 // -----------------------------------------------------------------------------
-// 7. Form Component Tests
+// 7. TextInput Component Tests
 // -----------------------------------------------------------------------------
-$t->section('7. Component\\Form (Composite Component)');
+$t->section('7. Component\\TextInput');
+
+$textInput = new TextInput('Ім\'я користувача', 'Сергій');
+$t->assertSame('Сергій', $textInput->getResult(), 'Default value initialized correctly');
+$t->assertSame(6, $textInput->getCursorPosition(), 'Cursor positioned at end of default string');
+$t->assert(!$textInput->isDone(), 'TextInput starts not done');
+
+// Appending text and spaces
+$textInput->handleKey(' ');
+$textInput->handleKey('Ч');
+$t->assertSame('Сергій Ч', $textInput->getResult(), 'Cyrillic character and space appended');
+$t->assertSame(8, $textInput->getCursorPosition(), 'Cursor advanced after typing');
+
+// Cursor navigation (Left, Right, Home, End)
+$textInput->handleKey(Key::Left);
+$t->assertSame(7, $textInput->getCursorPosition(), 'Key::Left moves cursor left');
+$textInput->handleKey(Key::Home);
+$t->assertSame(0, $textInput->getCursorPosition(), 'Key::Home jumps to start (0)');
+$textInput->handleKey(Key::Right);
+$t->assertSame(1, $textInput->getCursorPosition(), 'Key::Right moves cursor right');
+$textInput->handleKey(Key::End);
+$t->assertSame(8, $textInput->getCursorPosition(), 'Key::End jumps to end');
+
+// Backspace & Delete
+$textInput->handleKey(Key::Backspace);
+$t->assertSame('Сергій ', $textInput->getResult(), 'Backspace removes char before cursor');
+$textInput->handleKey(Key::Left);
+$textInput->handleKey(Key::Delete);
+$t->assertSame('Сергій', $textInput->getResult(), 'Delete removes char at cursor');
+
+// Max length limit
+$limitInput = new TextInput('Нік', maxLength: 4);
+$limitInput->handleKey('t');
+$limitInput->handleKey('e');
+$limitInput->handleKey('s');
+$limitInput->handleKey('t');
+$limitInput->handleKey('!');
+$t->assertSame('test', $limitInput->getResult(), 'TextInput respects maxLength limit');
+
+// Validation and Enter
+$emailValidator = new CallbackValidator(function (string $val): ?string {
+    if ($val === '') {
+        return 'Email є обов\'язковим';
+    }
+    if (!str_contains($val, '@')) {
+        return 'Некоректний email';
+    }
+    return null;
+});
+
+$valEmail = new TextInput('Електронна пошта', '', $emailValidator, placeholder: 'name@example.com');
+$valEmail->handleKey(Key::Enter);
+$t->assert(!$valEmail->isDone(), 'Invalid empty input does not finish on Enter');
+$t->assert(str_contains($valEmail->render(), 'Email є обов\'язковим'), 'Validator error shown in render');
+
+$valEmail->handleKey('u');
+$valEmail->handleKey('s');
+$valEmail->handleKey('e');
+$valEmail->handleKey('r');
+$valEmail->handleKey('@');
+$valEmail->handleKey('test.com');
+$t->assert($valEmail->isValid(), 'Valid email passes validator');
+$valEmail->handleKey(Key::Enter);
+$t->assert($valEmail->isDone(), 'Valid input completes on Enter');
+$t->assertSame('user@test.com', $valEmail->getResult(), 'Result is valid email string');
+
+// -----------------------------------------------------------------------------
+// 8. Form Component Tests
+// -----------------------------------------------------------------------------
+$t->section('8. Component\\Form (Composite Component)');
 
 // Form constructor validation
 $invalidFormKey = false;
