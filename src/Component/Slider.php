@@ -22,11 +22,12 @@ class Slider extends AbstractComponent
 
     /**
      * Slider constructor.
-     * @param string $label The label for the slider.
-     * @param int $min The minimum value of the slider.
-     * @param int $max The maximum value of the slider.
-     * @param int|null $default The default value of the slider (clamped to the range).
-     * @param int $step The step increment/decrement for the slider.
+     *
+     * @param  string                    $label   The label for the slider.
+     * @param  int                       $min     The minimum value of the slider.
+     * @param  int                       $max     The maximum value of the slider.
+     * @param  int|null                  $default The default value of the slider (clamped to the range).
+     * @param  int                       $step    The step increment/decrement for the slider.
      * @throws \InvalidArgumentException If $min is greater than $max or $step is less than 1.
      */
     public function __construct(
@@ -54,37 +55,37 @@ class Slider extends AbstractComponent
         $this->quickInputInstruction = $quickInputInstruction;
     }
 
-    public function handleKey(Key|string $key): void
+    public function handleKey(Key|string $key) : void
     {
-        if ($key === Key::Left || $key === Key::Right) {
+        if (Key::Left === $key || Key::Right === $key) {
             $this->typed = '';
-            $this->value = $key === Key::Left
+            $this->value = Key::Left === $key
                 ? max($this->min, $this->value - $this->step)
                 : min($this->max, $this->value + $this->step);
-        } elseif ($key === Key::Home || $key === Key::End) {
+        } elseif (Key::Home === $key || Key::End === $key) {
             $this->typed = '';
-            $this->value = $key === Key::Home ? $this->min : $this->max;
-        } elseif ($key === Key::Enter) {
+            $this->value = Key::Home === $key ? $this->min : $this->max;
+        } elseif (Key::Enter === $key) {
             $this->done = true;
         } elseif (is_string($key) && ctype_digit($key)) {
             // Quick number input: digits are collected in place and clamped
             // to the slider's range, Enter confirms as usual.
             $this->typed = substr($this->typed . $key, 0, strlen((string) $this->max));
             $this->value = $this->clamp((int) $this->typed);
-        } elseif ($key === Key::Backspace && $this->typed !== '') {
+        } elseif (Key::Backspace === $key && '' !== $this->typed) {
             $this->typed = substr($this->typed, 0, -1);
-            if ($this->typed !== '') {
+            if ('' !== $this->typed) {
                 $this->value = $this->clamp((int) $this->typed);
             }
         }
     }
 
-    private function clamp(int $value): int
+    private function clamp(int $value) : int
     {
         return min($this->max, max($this->min, $value));
     }
 
-    public function getResult(): mixed
+    public function getResult() : mixed
     {
         return $this->value;
     }
@@ -92,7 +93,7 @@ class Slider extends AbstractComponent
     /**
      * Renders the slider.
      */
-    public function render(): string
+    public function render() : string
     {
         // Progress bar
         $bar_width = 50;

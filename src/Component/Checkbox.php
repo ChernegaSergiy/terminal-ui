@@ -17,8 +17,9 @@ class Checkbox extends AbstractComponent
 
     /**
      * Checkbox constructor.
-     * @param string $label The label for the checkbox.
-     * @param bool $default_checked The initial state of the checkbox.
+     *
+     * @param string $label           The label for the checkbox.
+     * @param bool   $default_checked The initial state of the checkbox.
      */
     public function __construct(
         string $label,
@@ -30,21 +31,21 @@ class Checkbox extends AbstractComponent
         $this->instruction = $instruction;
     }
 
-    public function handleKey(Key|string $key): void
+    public function handleKey(Key|string $key) : void
     {
-        if ($key === ' ') {
-            $this->checked = !$this->checked;
-        } elseif ($key === Key::Enter) {
+        if (' ' === $key) {
+            $this->checked = ! $this->checked;
+        } elseif (Key::Enter === $key) {
             $this->done = true;
         }
     }
 
-    public function getResult(): bool
+    public function getResult() : bool
     {
         return $this->checked;
     }
 
-    public function render(): string
+    public function render() : string
     {
         $checkbox_char = $this->checked ? '[x]' : '[ ]';
 

@@ -13,39 +13,45 @@ interface Component
 {
     /**
      * Renders the component's current state.
+     *
      * @return string The lines of the component separated by "\n", without a leading or trailing
      *                newline and without an outer margin: the caller decides where and how to place it.
      */
-    public function render(): string;
+    public function render() : string;
 
     /**
      * Handles a key press and updates the component's state.
+     *
      * @param Key|string $key The key that was pressed: a Key case for non-printable keys
      *                        (e.g. Key::Up, Key::Enter) or the typed character itself (e.g. 'a', '1', ' ').
      */
-    public function handleKey(Key|string $key): void;
+    public function handleKey(Key|string $key) : void;
 
     /**
      * Checks if the component has finished its interaction.
+     *
      * @return bool True if the interaction is complete, false otherwise.
      */
-    public function isDone(): bool;
+    public function isDone() : bool;
 
     /**
      * Gets the final result from the component after interaction is complete.
+     *
      * @return mixed The result of the interaction.
      */
-    public function getResult(): mixed;
+    public function getResult() : mixed;
 
     /**
      * Checks if the component's current state is valid.
+     *
      * @return bool True if the component is valid, false otherwise.
      */
-    public function isValid(): bool;
+    public function isValid() : bool;
 
     /**
      * Gets a human-readable label for the component.
+     *
      * @return string The label of the component.
      */
-    public function getLabel(): string;
+    public function getLabel() : string;
 }

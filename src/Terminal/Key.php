@@ -10,7 +10,7 @@ namespace ChernegaSergiy\TerminalUi\Terminal;
  * Printable characters (letters, digits, the space bar) have no case here:
  * they are passed around as the plain one-character string that was typed.
  */
-enum Key: string
+enum Key : string
 {
     case Up = 'up';
     case Down = 'down';

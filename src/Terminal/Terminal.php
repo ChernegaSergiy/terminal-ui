@@ -19,6 +19,7 @@ class Terminal
 
     /**
      * Enables raw mode for terminal input.
+     *
      * @throws \RuntimeException On Windows, when STDIN is not a terminal, or when stty is unavailable.
      */
     public static function enableRawMode() : void
@@ -26,12 +27,12 @@ class Terminal
         if (PHP_OS_FAMILY === 'Windows') {
             throw new \RuntimeException('Windows is not supported: reading single key presses requires stty.');
         }
-        if (!stream_isatty(STDIN)) {
+        if (! stream_isatty(STDIN)) {
             throw new \RuntimeException('STDIN is not an interactive terminal.');
         }
 
         $settings = shell_exec('stty -g 2>/dev/null');
-        if (!is_string($settings) || trim($settings) === '') {
+        if (! is_string($settings) || '' === trim($settings)) {
             throw new \RuntimeException('Unable to read terminal settings with stty.');
         }
 
@@ -71,7 +72,7 @@ class Terminal
 
         if (function_exists('pcntl_signal') && function_exists('pcntl_async_signals')) {
             pcntl_async_signals(true);
-            $handler = static function (int $signal): void {
+            $handler = static function (int $signal) : void {
                 self::restore();
                 exit(128 + $signal);
             };
@@ -86,7 +87,7 @@ class Terminal
      */
     public static function disableRawMode() : void
     {
-        if (self::$stty_settings !== null) {
+        if (null !== self::$stty_settings) {
             shell_exec('stty ' . trim(self::$stty_settings));
             self::$stty_settings = null;
         }
@@ -99,29 +100,35 @@ class Terminal
      * returned key by key, escape sequences are never cut in the middle and multi-byte UTF-8
      * characters come back whole. Escape sequences the library does not know are skipped.
      *
-     * @return Key|string A Key case for arrows, Home, End, Delete, PageUp, PageDown, Enter, Esc, Tab and Backspace,
-     *                    otherwise the typed character itself.
+     * @return Key|string        A Key case for arrows, Home, End, Delete, PageUp, PageDown, Enter, Esc, Tab and Backspace,
+     *                           otherwise the typed character itself.
      * @throws \RuntimeException If STDIN is closed (EOF).
      */
     public static function readKey() : Key|string
     {
         while (true) {
             $byte = self::readByte();
-            if ($byte === null) {
+            if (null === $byte) {
                 throw new \RuntimeException('STDIN was closed while waiting for a key press.');
             }
 
-            if ($byte === "\033") {
+            if ("\033" === $byte) {
                 $key = self::readEscapeSequence();
-                if ($key !== null) {
+                if (null !== $key) {
                     return $key;
                 }
                 continue; // An unknown sequence: wait for the next key.
             }
 
-            if ($byte === "\n" || $byte === "\r") return Key::Enter;
-            if ($byte === "\x7f" || $byte === "\x08") return Key::Backspace;
-            if ($byte === "\t") return Key::Tab;
+            if ("\n" === $byte || "\r" === $byte) {
+                return Key::Enter;
+            }
+            if ("\x7f" === $byte || "\x08" === $byte) {
+                return Key::Backspace;
+            }
+            if ("\t" === $byte) {
+                return Key::Tab;
+            }
 
             $code = ord($byte);
             if ($code >= 0x80 && $code < 0xC0) {
@@ -137,20 +144,21 @@ class Terminal
 
     /**
      * Reads the rest of an escape sequence after its leading ESC byte.
+     *
      * @return Key|null The key it stands for; Key::Esc when ESC was pressed on its own; null for unknown sequences.
      */
     private static function readEscapeSequence() : ?Key
     {
-        if (!self::inputPending()) {
+        if (! self::inputPending()) {
             return Key::Esc;
         }
 
         $introducer = self::readByte();
-        if ($introducer === 'O') {
+        if ('O' === $introducer) {
             $final = self::inputPending() ? self::readByte() : null;
-            return $final === null ? null : self::mapCsi('', $final);
+            return null === $final ? null : self::mapCsi('', $final);
         }
-        if ($introducer !== '[') {
+        if ('[' !== $introducer) {
             return null; // Alt+key and other sequences are not supported.
         }
 
@@ -158,7 +166,7 @@ class Terminal
         $params = '';
         while (self::inputPending()) {
             $byte = self::readByte();
-            if ($byte === null) {
+            if (null === $byte) {
                 return null;
             }
             if ($byte >= '@' && $byte <= '~') {
@@ -202,7 +210,7 @@ class Terminal
         $bytes = '';
         for ($i = 0; $i < $count; $i++) {
             $byte = self::readByte();
-            if ($byte === null) {
+            if (null === $byte) {
                 break;
             }
             $bytes .= $byte;
@@ -228,7 +236,7 @@ class Terminal
             error_clear_last();
             $ready = @stream_select($read, $write, $except, null);
 
-            if ($ready === false) {
+            if (false === $ready) {
                 if (str_contains(error_get_last()['message'] ?? '', 'Interrupted')) {
                     continue; // A signal arrived; its handler has run or is about to.
                 }
@@ -241,7 +249,7 @@ class Terminal
 
         $byte = fread(STDIN, 1);
 
-        return ($byte === false || $byte === '') ? null : $byte;
+        return (false === $byte || '' === $byte) ? null : $byte;
     }
 
     /**
@@ -267,6 +275,7 @@ class Terminal
 
     /**
      * Moves the terminal cursor to a specific position.
+     *
      * @param int $row The row number (1-based).
      * @param int $col The column number (1-based).
      */

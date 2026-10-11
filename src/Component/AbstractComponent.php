@@ -21,12 +21,12 @@ abstract class AbstractComponent implements Component
         $this->label = $label;
     }
 
-    public function getLabel(): string
+    public function getLabel() : string
     {
         return $this->label;
     }
 
-    public function isDone(): bool
+    public function isDone() : bool
     {
         return $this->done;
     }
@@ -34,7 +34,7 @@ abstract class AbstractComponent implements Component
     /**
      * Components are valid unless they say otherwise.
      */
-    public function isValid(): bool
+    public function isValid() : bool
     {
         return true;
     }

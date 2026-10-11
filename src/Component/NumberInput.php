@@ -25,14 +25,14 @@ class NumberInput extends AbstractComponent
         $this->validator = $validator;
     }
 
-    public function handleKey(Key|string $key): void
+    public function handleKey(Key|string $key) : void
     {
         $this->errorMessage = null; // Clear previous error on new input
 
-        if ($key === Key::Enter) {
+        if (Key::Enter === $key) {
             $this->errorMessage = $this->validate();
-            $this->done = $this->errorMessage === null;
-        } elseif ($key === Key::Backspace && strlen($this->current_value) > 0) {
+            $this->done = null === $this->errorMessage;
+        } elseif (Key::Backspace === $key && strlen($this->current_value) > 0) {
             $this->current_value = substr($this->current_value, 0, -1);
             $this->done = false;
         } elseif (is_string($key) && ctype_digit($key) && strlen($this->current_value) < 3) {
@@ -41,7 +41,7 @@ class NumberInput extends AbstractComponent
         }
     }
 
-    public function getResult(): int
+    public function getResult() : int
     {
         return (int) $this->current_value;
     }
@@ -49,12 +49,12 @@ class NumberInput extends AbstractComponent
     /**
      * Whether the current value passes the validator (always true without one).
      */
-    public function isValid(): bool
+    public function isValid() : bool
     {
-        return $this->validate() === null;
+        return null === $this->validate();
     }
 
-    private function validate(): ?string
+    private function validate() : ?string
     {
         return $this->validator?->validate($this->current_value);
     }
@@ -62,11 +62,11 @@ class NumberInput extends AbstractComponent
     /**
      * Renders the input field.
      */
-    public function render(): string
+    public function render() : string
     {
         $lines = [$this->label, '', Ansi::style(Ansi::BOLD_YELLOW, "{$this->current_value}_")];
 
-        if ($this->errorMessage !== null) {
+        if (null !== $this->errorMessage) {
             $lines[] = '';
             $lines[] = Ansi::style(Ansi::RED, "✗ {$this->errorMessage}");
         }

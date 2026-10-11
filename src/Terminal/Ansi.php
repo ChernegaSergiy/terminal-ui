@@ -26,12 +26,12 @@ final class Ansi
      * Wraps $text in the given SGR codes (e.g. Ansi::BOLD_YELLOW) and resets the style afterwards.
      * Returns $text unchanged when styling is disabled.
      */
-    public static function style(string $codes, string $text): string
+    public static function style(string $codes, string $text) : string
     {
         return self::isEnabled() ? "\033[{$codes}m{$text}\033[0m" : $text;
     }
 
-    public static function isEnabled(): bool
+    public static function isEnabled() : bool
     {
         return self::$enabled ??= self::detect();
     }
@@ -39,15 +39,15 @@ final class Ansi
     /**
      * Forces styling on or off, or restores auto-detection when given null.
      */
-    public static function setEnabled(?bool $enabled): void
+    public static function setEnabled(?bool $enabled) : void
     {
         self::$enabled = $enabled;
     }
 
-    private static function detect(): bool
+    private static function detect() : bool
     {
         $noColor = getenv('NO_COLOR');
-        if ($noColor !== false && $noColor !== '') {
+        if (false !== $noColor && '' !== $noColor) {
             return false;
         }
 

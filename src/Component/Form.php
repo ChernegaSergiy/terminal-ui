@@ -21,8 +21,9 @@ class Form extends AbstractComponent
 
     /**
      * Form constructor.
-     * @param string $title The title of the form.
-     * @param array<string, Component> $fields The fields keyed by name; the name is the key of the field in getResult().
+     *
+     * @param  string                    $title  The title of the form.
+     * @param  array<string, Component>  $fields The fields keyed by name; the name is the key of the field in getResult().
      * @throws \InvalidArgumentException If a field is not keyed by a non-empty string name.
      */
     public function __construct(string $title, array $fields = [])
@@ -30,7 +31,7 @@ class Form extends AbstractComponent
         parent::__construct($title);
 
         foreach ($fields as $name => $component) {
-            if (!is_string($name)) {
+            if (! is_string($name)) {
                 throw new \InvalidArgumentException('Form fields must be keyed by name, e.g. [\'age\' => $input]; use add() for numeric names.');
             }
             $this->add($name, $component);
@@ -39,13 +40,14 @@ class Form extends AbstractComponent
 
     /**
      * Adds a field to the end of the form.
-     * @param string $name The name of the field: its key in the form's result.
-     * @param Component $component The component that collects the value.
+     *
+     * @param  string                    $name      The name of the field: its key in the form's result.
+     * @param  Component                 $component The component that collects the value.
      * @throws \InvalidArgumentException If the name is empty or already used by another field.
      */
-    public function add(string $name, Component $component): static
+    public function add(string $name, Component $component) : static
     {
-        if ($name === '') {
+        if ('' === $name) {
             throw new \InvalidArgumentException('A form field needs a non-empty name.');
         }
         if (in_array($name, $this->names, true)) {
@@ -58,7 +60,7 @@ class Form extends AbstractComponent
         return $this;
     }
 
-    public function handleKey(Key|string $key): void
+    public function handleKey(Key|string $key) : void
     {
         $this->submitFailed = false;
 
@@ -69,13 +71,13 @@ class Form extends AbstractComponent
 
         $current_component = $this->components[$this->focusedIndex];
 
-        if ($key === Key::Down || $key === Key::Tab) {
+        if (Key::Down === $key || Key::Tab === $key) {
             // Move focus to the next component
             $this->focusedIndex = ($this->focusedIndex + 1) % count($this->components);
-        } elseif ($key === Key::Up) {
+        } elseif (Key::Up === $key) {
             // Move focus to the previous component
             $this->focusedIndex = ($this->focusedIndex - 1 + count($this->components)) % count($this->components);
-        } elseif ($key === Key::Enter) {
+        } elseif (Key::Enter === $key) {
             $current_component->handleKey($key); // Pass Enter to the current component
 
             if ($current_component->isValid()) {
@@ -101,27 +103,27 @@ class Form extends AbstractComponent
         }
     }
 
-    private function focusFirstInvalid(): void
+    private function focusFirstInvalid() : void
     {
         foreach ($this->components as $index => $component) {
-            if (!$component->isValid()) {
+            if (! $component->isValid()) {
                 $this->focusedIndex = $index;
                 return;
             }
         }
     }
 
-    public function isValid(): bool
+    public function isValid() : bool
     {
         foreach ($this->components as $component) {
-            if (!$component->isValid()) {
+            if (! $component->isValid()) {
                 return false;
             }
         }
         return true;
     }
 
-    public function getResult(): mixed
+    public function getResult() : mixed
     {
         $results = [];
         foreach ($this->components as $index => $component) {
@@ -130,7 +132,7 @@ class Form extends AbstractComponent
         return $results;
     }
 
-    public function render(): string
+    public function render() : string
     {
         $lines = [Ansi::style(Ansi::BOLD_CYAN, $this->label), ''];
 
@@ -139,7 +141,7 @@ class Form extends AbstractComponent
             $marker = $index === $this->focusedIndex ? Ansi::style(Ansi::BOLD_YELLOW, '▶') . ' ' : '  ';
 
             foreach (explode("\n", $component->render()) as $i => $line) {
-                $lines[] = $line === '' ? '' : ($i === 0 ? $marker : '  ') . $line;
+                $lines[] = '' === $line ? '' : (0 === $i ? $marker : '  ') . $line;
             }
             $lines[] = '';
         }

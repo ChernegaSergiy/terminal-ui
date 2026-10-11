@@ -13,7 +13,7 @@ class CallbackValidator implements ValidatorInterface
         $this->callback = $callback;
     }
 
-    public function validate(string $value): ?string
+    public function validate(string $value) : ?string
     {
         return ($this->callback)($value);
     }

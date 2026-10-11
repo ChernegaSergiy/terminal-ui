@@ -19,8 +19,9 @@ class Menu extends AbstractComponent
 
     /**
      * Menu constructor.
+     *
      * @param string $title The title of the menu.
-     * @param array $items An array of menu items (strings).
+     * @param array  $items An array of menu items (strings).
      */
     public function __construct(
         string $title,
@@ -32,20 +33,20 @@ class Menu extends AbstractComponent
         $this->navigationInstruction = $navigationInstruction;
     }
 
-    public function handleKey(Key|string $key): void
+    public function handleKey(Key|string $key) : void
     {
-        if ($key === Key::Up && $this->selected > 0) {
+        if (Key::Up === $key && $this->selected > 0) {
             $this->selected--;
-        } elseif ($key === Key::Down && $this->selected < count($this->items) - 1) {
+        } elseif (Key::Down === $key && $this->selected < count($this->items) - 1) {
             $this->selected++;
-        } elseif ($key === Key::Home) {
+        } elseif (Key::Home === $key) {
             $this->selected = 0;
-        } elseif ($key === Key::End) {
+        } elseif (Key::End === $key) {
             $this->selected = max(0, count($this->items) - 1);
-        } elseif ($key === Key::Enter) {
+        } elseif (Key::Enter === $key) {
             $this->cancelled = false;
             $this->done = true;
-        } elseif ($key === Key::Esc) {
+        } elseif (Key::Esc === $key) {
             $this->cancelled = true;
             $this->done = true;
         }
@@ -54,7 +55,7 @@ class Menu extends AbstractComponent
     /**
      * @return int|null The index of the chosen item, or null if the menu was cancelled with ESC.
      */
-    public function getResult(): ?int
+    public function getResult() : ?int
     {
         return $this->cancelled ? null : $this->selected;
     }
@@ -62,7 +63,7 @@ class Menu extends AbstractComponent
     /**
      * Renders the menu.
      */
-    public function render(): string
+    public function render() : string
     {
         $lines = [Ansi::style(Ansi::BOLD_CYAN, $this->label), ''];
 

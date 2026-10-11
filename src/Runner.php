@@ -14,10 +14,11 @@ class Runner
 {
     /**
      * Runs the given component until it is done.
-     * @param Component $component The component to run.
-     * @return mixed The result from the component.
+     *
+     * @param  Component $component The component to run.
+     * @return mixed     The result from the component.
      */
-    public static function run(Component $component): mixed
+    public static function run(Component $component) : mixed
     {
         Terminal::enableRawMode();
         Terminal::enterAlternativeScreen();
@@ -26,7 +27,7 @@ class Runner
         try {
             self::draw($component);
 
-            while (!$component->isDone()) {
+            while (! $component->isDone()) {
                 $key = Terminal::readKey();
                 $component->handleKey($key);
                 self::draw($component);
@@ -44,11 +45,11 @@ class Runner
      * Draws a single frame: every frame replaces the previous one.
      * The component only describes its lines; the runner owns the margin around them.
      */
-    private static function draw(Component $component): void
+    private static function draw(Component $component) : void
     {
         $frame = "\n";
         foreach (explode("\n", $component->render()) as $line) {
-            $frame .= ($line === '' ? '' : '  ' . $line) . "\n";
+            $frame .= ('' === $line ? '' : '  ' . $line) . "\n";
         }
 
         Terminal::clearScreen();
