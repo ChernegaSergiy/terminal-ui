@@ -1,4 +1,4 @@
-# ChernegaSergiy/TerminalUi
+# terminal-ui
 
 This library provides a set of interactive components for building terminal-based user interfaces in PHP.
 
