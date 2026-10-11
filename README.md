@@ -141,6 +141,10 @@ The runner draws every frame in the terminal's alternative screen, so the output
 
 **Requirements**: an interactive POSIX terminal with `stty` available. Windows and non-interactive input (pipes, redirected STDIN) are not supported and raise a `RuntimeException`. The optional `pcntl` extension lets the terminal be restored on `SIGINT`/`SIGTERM`/`SIGHUP`.
 
+### Colours and `NO_COLOR`
+
+Components style their output through `ChernegaSergiy\TerminalUi\Terminal\Ansi`. Colours are switched off automatically when the `NO_COLOR` environment variable is set to a non-empty value (see [no-color.org](https://no-color.org)) or when `STDOUT` is not a terminal, so escape codes do not end up in log files or pipes. `Ansi::setEnabled(true|false)` overrides the detection (`null` restores it); this is handy in tests, where `render()` output should not depend on the environment. Use `Ansi::style(Ansi::BOLD_YELLOW, 'text')` in your own components to get the same behaviour.
+
 ## Usage Example
 
 Here's a simple example demonstrating how to create a form with `Slider` and `NumberInput` components and run it, including external validation for `NumberInput`:
