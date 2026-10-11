@@ -103,6 +103,26 @@ An interactive component for capturing a number from the user: it accepts digits
     -   `$prompt` (string): The message displayed to the user asking for input.
     -   `$validator` (ValidatorInterface|null): An optional validator instance to apply to the input. If provided, the input will only be considered "done" if the validator returns `null` (i.e., no error).
 
+### `TextInput` Class
+
+An interactive component for capturing a text string from the user. It supports full cursor navigation (`Left`/`Right`, `Home`, `End`), `Backspace`, `Delete`, multi-byte UTF-8 text, an optional placeholder, maximum length constraint, and external validation via `ValidatorInterface`.
+
+-   **Constructor**:
+    ```php
+    public function __construct(
+        string $prompt,
+        string $default = '',
+        ?ValidatorInterface $validator = null,
+        ?string $placeholder = null,
+        ?int $maxLength = null
+    )
+    ```
+    -   `$prompt` (string): The message displayed to the user asking for input.
+    -   `$default` (string): Optional. The initial text value (default: `''`).
+    -   `$validator` (ValidatorInterface|null): Optional. A validator instance. If provided, input will only be submitted when valid.
+    -   `$placeholder` (string|null): Optional. Placeholder text shown when input is empty.
+    -   `$maxLength` (int|null): Optional. Maximum allowed character length.
+
 ### Validation with `ValidatorInterface`
 
 To keep UI components clean and free of business logic, validation is handled externally via the `ValidatorInterface`. This allows developers to define custom validation rules and error messages.
