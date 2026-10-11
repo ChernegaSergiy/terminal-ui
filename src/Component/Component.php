@@ -48,10 +48,4 @@ interface Component
      * @return string The label of the component.
      */
     public function getLabel(): string;
-
-    /**
-     * Gets a unique identifier for the component.
-     * @return string The unique ID of the component.
-     */
-    public function getId(): string;
 }

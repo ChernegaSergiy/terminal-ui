@@ -19,10 +19,9 @@ class NumberInput extends AbstractComponent
 
     public function __construct(
         string $prompt,
-        ?string $id = null,
         ?ValidatorInterface $validator = null
     ) {
-        parent::__construct($prompt, $id, 'input_');
+        parent::__construct($prompt);
         $this->validator = $validator;
     }
 

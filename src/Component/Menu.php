@@ -21,15 +21,13 @@ class Menu extends AbstractComponent
      * Menu constructor.
      * @param string $title The title of the menu.
      * @param array $items An array of menu items (strings).
-     * @param string|null $id Optional unique ID for the component.
      */
     public function __construct(
         string $title,
         array $items,
-        ?string $id = null,
         string $navigationInstruction = 'Use ↑↓ to navigate, Enter to select, ESC to cancel'
     ) {
-        parent::__construct($title, $id, 'menu_');
+        parent::__construct($title);
         $this->items = $items;
         $this->navigationInstruction = $navigationInstruction;
     }

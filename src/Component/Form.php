@@ -23,12 +23,11 @@ class Form extends AbstractComponent
      * Form constructor.
      * @param string $title The title of the form.
      * @param array<string, Component> $fields The fields keyed by name; the name is the key of the field in getResult().
-     * @param string|null $id Optional unique ID for the component.
      * @throws \InvalidArgumentException If a field is not keyed by a non-empty string name.
      */
-    public function __construct(string $title, array $fields = [], ?string $id = null)
+    public function __construct(string $title, array $fields = [])
     {
-        parent::__construct($title, $id, 'form_');
+        parent::__construct($title);
 
         foreach ($fields as $name => $component) {
             if (!is_string($name)) {

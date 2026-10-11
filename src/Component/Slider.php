@@ -27,7 +27,6 @@ class Slider extends AbstractComponent
      * @param int $max The maximum value of the slider.
      * @param int|null $default The default value of the slider (clamped to the range).
      * @param int $step The step increment/decrement for the slider.
-     * @param string|null $id Optional unique ID for the component.
      * @throws \InvalidArgumentException If $min is greater than $max or $step is less than 1.
      */
     public function __construct(
@@ -36,7 +35,6 @@ class Slider extends AbstractComponent
         int $max,
         ?int $default = null,
         int $step = 1,
-        ?string $id = null,
         string $changeValueInstruction = '← → to change the value, Enter to confirm',
         string $quickInputInstruction = 'Or type a digit for quick input'
     ) {
@@ -47,7 +45,7 @@ class Slider extends AbstractComponent
             throw new \InvalidArgumentException("Slider step must be at least 1, {$step} given.");
         }
 
-        parent::__construct($label, $id, 'slider_');
+        parent::__construct($label);
         $this->min = $min;
         $this->max = $max;
         $this->value = $this->clamp($default ?? $min);

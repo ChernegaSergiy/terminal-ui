@@ -32,9 +32,6 @@ All interactive elements in this library implement the `Component` interface. Th
     -   **Purpose**: Returns a human-readable label or prompt for the component.
     -   **Details**: Used to display descriptive text to the user, often as part of the `render()` method or by a parent `Form`.
 
--   `getId(): string`
-    -   **Purpose**: Returns a unique identifier for the component.
-    -   **Details**: Useful for distinguishing components within a `Form` and for retrieving specific results from the form's output.
 
 ### `Key` Enum
 
@@ -64,11 +61,10 @@ The `Form` class serves as a powerful container and manager for multiple `Compon
 
 -   **Constructor**:
     ```php
-    public function __construct(string $title, array $fields = [], ?string $id = null)
+    public function __construct(string $title, array $fields = [])
     ```
     -   `$title` (string): The title displayed above the form.
     -   `$fields` (array<string, Component>): The child components keyed by field name, in the order they are shown. More can be added later with `add()`. A list without names throws an `InvalidArgumentException`.
-    -   `$id` (string|null): Optional unique ID for the component.
 
 -   **Adding fields**: `add(string $name, Component $component): static` appends a field and returns the form, so calls can be chained. The name must be non-empty and unique within the form; use `add()` instead of the constructor array for names that PHP would turn into integer keys (e.g. `'2024'`).
 
@@ -84,14 +80,13 @@ An interactive component designed for selecting a numeric value within a defined
 
 -   **Constructor**:
     ```php
-    public function __construct(string $label, int $min, int $max, ?int $default = null, int $step = 1, ?string $id = null, string $changeValueInstruction = '← → to change the value, Enter to confirm', string $quickInputInstruction = 'Or type a digit for quick input')
+    public function __construct(string $label, int $min, int $max, ?int $default = null, int $step = 1, string $changeValueInstruction = '← → to change the value, Enter to confirm', string $quickInputInstruction = 'Or type a digit for quick input')
     ```
     -   `$label` (string): The prompt or label displayed for the slider.
     -   `$min` (int): The minimum allowed value for the slider.
     -   `$max` (int): The maximum allowed value for the slider.
     -   `$default` (int|null): The initial value of the slider. If `null`, it defaults to `$min`.
     -   `$step` (int): The increment/decrement amount when adjusting the slider value.
-    -   `$id` (string|null): An optional unique identifier for the slider component.
     -   `$changeValueInstruction` (string): Optional. The instruction message for changing the value (default: '← → to change the value, Enter to confirm').
     -   `$quickInputInstruction` (string): Optional. The instruction message for quick input (default: 'Or type a digit for quick input').
 
@@ -101,10 +96,9 @@ An interactive component for capturing a number from the user: it accepts digits
 
 -   **Constructor**:
     ```php
-    public function __construct(string $prompt, ?string $id = null, ?ValidatorInterface $validator = null)
+    public function __construct(string $prompt, ?ValidatorInterface $validator = null)
     ```
     -   `$prompt` (string): The message displayed to the user asking for input.
-    -   `$id` (string|null): An optional unique identifier for the input component.
     -   `$validator` (ValidatorInterface|null): An optional validator instance to apply to the input. If provided, the input will only be considered "done" if the validator returns `null` (i.e., no error).
 
 ### Validation with `ValidatorInterface`
@@ -165,8 +159,8 @@ use ChernegaSergiy\TerminalUi\Component\NumberInput;
 use ChernegaSergiy\TerminalUi\Validator\CallbackValidator;
 
 // Create components
-$slider1 = new Slider('Choose a value for Slider 1', 0, 100, 50, 5, 'slider_one');
-$slider2 = new Slider('Choose a value for Slider 2', 10, 20, 15, 1, 'slider_two');
+$slider1 = new Slider('Choose a value for Slider 1', 0, 100, 50, 5);
+$slider2 = new Slider('Choose a value for Slider 2', 10, 20, 15, 1);
 
 // Create a validator for age input
 $ageValidator = new CallbackValidator(function (string $value): ?string {
@@ -183,7 +177,7 @@ $ageValidator = new CallbackValidator(function (string $value): ?string {
     return null; // Valid
 });
 
-$ageInput = new NumberInput('Enter your age', 'age_input', $ageValidator);
+$ageInput = new NumberInput('Enter your age', $ageValidator);
 
 // Create the form: every field has a name that becomes its key in the result
 $form = new Form('Application settings', [
@@ -197,8 +191,8 @@ $results = Runner::run($form);
 
 // Output the results
 echo "\n--- Form results ---\n";
-foreach ($results as $id => $value) {
-    echo "{$id}: {$value}\n";
+foreach ($results as $name => $value) {
+    echo "{$name}: {$value}\n";
 }
 echo "------------------------\n";
 

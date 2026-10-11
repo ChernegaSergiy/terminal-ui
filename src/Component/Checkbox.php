@@ -19,15 +19,13 @@ class Checkbox extends AbstractComponent
      * Checkbox constructor.
      * @param string $label The label for the checkbox.
      * @param bool $default_checked The initial state of the checkbox.
-     * @param string|null $id Optional unique ID for the component.
      */
     public function __construct(
         string $label,
         bool $default_checked = false,
-        ?string $id = null,
         string $instruction = 'Press Space to toggle, Enter to confirm'
     ) {
-        parent::__construct($label, $id, 'checkbox_');
+        parent::__construct($label);
         $this->checked = $default_checked;
         $this->instruction = $instruction;
     }
