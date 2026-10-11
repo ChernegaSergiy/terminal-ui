@@ -12,9 +12,9 @@ All interactive elements in this library implement the `Component` interface. Th
     -   **Purpose**: Describes the component's current state as a frame. The component never writes to the terminal itself; the `Runner` (or a parent `Form`) decides where the frame goes.
     -   **Details**: Returns the lines of the component separated by `"\n"`, with no leading or trailing newline and no outer margin. It may contain ANSI styling (each styled span should reset itself). Because the result is a plain string, a component can be nested inside another one and tested by comparing the returned string.
 
--   `handleKey(string $key): void`
+-   `handleKey(Key|string $key): void`
     -   **Purpose**: Processes user key presses and updates the component's internal state accordingly.
-    -   **Details**: Takes a string representing the pressed key (e.g., 'up', 'down', 'enter', 'a', '1'). Components should define how they react to different keys (e.g., a slider might increment/decrement on arrow keys, an input field might append characters).
+    -   **Details**: Takes either a `Key` case for a non-printable key (e.g., `Key::Up`, `Key::Enter`) or the typed character itself as a string (e.g., `'a'`, `'1'`, `' '`). Components should define how they react to different keys (e.g., a slider might increment/decrement on arrow keys, an input field might append characters).
 
 -   `isDone(): bool`
     -   **Purpose**: Indicates whether the interaction with the component is complete.
@@ -35,6 +35,21 @@ All interactive elements in this library implement the `Component` interface. Th
 -   `getId(): string`
     -   **Purpose**: Returns a unique identifier for the component.
     -   **Details**: Useful for distinguishing components within a `Form` and for retrieving specific results from the form's output.
+
+### `Key` Enum
+
+`ChernegaSergiy\TerminalUi\Terminal\Key` lists the non-printable keys the library understands: `Up`, `Down`, `Left`, `Right`, `Enter`, `Esc`, `Tab` and `Backspace`. Printable characters, including the space bar, have no case: they are passed to `handleKey()` as the plain string that was typed, so check for them with `is_string($key)`.
+
+```php
+public function handleKey(Key|string $key): void
+{
+    if ($key === Key::Enter) {
+        $this->done = true;
+    } elseif ($key === ' ') {
+        $this->checked = !$this->checked;
+    }
+}
+```
 
 ### `Form` Class
 
