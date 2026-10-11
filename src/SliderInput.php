@@ -14,6 +14,7 @@ class SliderInput implements Component
     private int $max;
     private int $value;
     private int $step;
+    private string $typed = '';
     private bool $done = false;
     private string $id;
 
@@ -51,18 +52,29 @@ class SliderInput implements Component
 
     public function handleKey(string $key): void
     {
-        if ($key === 'left' && $this->value > $this->min) {
-            $this->value = max($this->min, $this->value - $this->step);
-        } elseif ($key === 'right' && $this->value < $this->max) {
-            $this->value = min($this->max, $this->value + $this->step);
+        if ($key === 'left' || $key === 'right') {
+            $this->typed = '';
+            $this->value = $key === 'left'
+                ? max($this->min, $this->value - $this->step)
+                : min($this->max, $this->value + $this->step);
         } elseif ($key === 'enter') {
             $this->done = true;
         } elseif (ctype_digit($key)) {
-            // Quick number input
-            $input = new InteractiveInput($this->label, $this->min, $this->max);
-            $this->value = ComponentRunner::run($input);
-            $this->done = true;
+            // Quick number input: digits are collected in place and clamped
+            // to the slider's range, Enter confirms as usual.
+            $this->typed = substr($this->typed . $key, 0, strlen((string) $this->max));
+            $this->value = $this->clamp((int) $this->typed);
+        } elseif ($key === 'backspace' && $this->typed !== '') {
+            $this->typed = substr($this->typed, 0, -1);
+            if ($this->typed !== '') {
+                $this->value = $this->clamp((int) $this->typed);
+            }
         }
+    }
+
+    private function clamp(int $value): int
+    {
+        return min($this->max, max($this->min, $value));
     }
 
     public function isDone(): bool
