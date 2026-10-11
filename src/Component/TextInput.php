@@ -124,7 +124,7 @@ class TextInput extends AbstractComponent
         $len = mb_strlen($this->value);
 
         if (0 === $len && null !== $this->placeholder && '' !== $this->placeholder) {
-            $inputLine = Ansi::style(Ansi::BOLD_YELLOW, '_') . Ansi::style(Ansi::GRAY, $this->placeholder);
+            $inputLine = Ansi::style(Ansi::GRAY, $this->placeholder);
         } elseif ($this->cursorPosition >= $len) {
             $inputLine = Ansi::style(Ansi::BOLD_YELLOW, $this->value . '_');
         } else {
