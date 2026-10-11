@@ -63,13 +63,13 @@ class NumberInput extends AbstractComponent
      */
     public function render(): string
     {
-        $out = "\n  {$this->label}\n\n"
-            . "  \033[1;33m{$this->current_value}_\033[0m\n\n";
+        $lines = [$this->label, '', "\033[1;33m{$this->current_value}_\033[0m"];
 
         if ($this->errorMessage !== null) {
-            $out .= "  \033[31m✗ {$this->errorMessage}\033[0m\n";
+            $lines[] = '';
+            $lines[] = "\033[31m✗ {$this->errorMessage}\033[0m";
         }
 
-        return $out;
+        return implode("\n", $lines);
     }
 }

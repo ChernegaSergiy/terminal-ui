@@ -105,20 +105,23 @@ class Form extends AbstractComponent
 
     public function render(): string
     {
-        $out = "\n  \033[1;36m{$this->label}\033[0m\n\n";
+        $lines = ["\033[1;36m{$this->label}\033[0m", ''];
 
         foreach ($this->components as $index => $component) {
-            // Highlight the focused component
-            $out .= $index === $this->focusedIndex ? "  \033[1;33m▶ " : "    ";
-            $out .= $component->render(); // Each component renders itself
-            $out .= "\033[0m\n"; // Reset color and add newline after each component's render
+            // The marker sits on the first line of the focused field; the rest is aligned under it.
+            $marker = $index === $this->focusedIndex ? "\033[1;33m▶\033[0m " : '  ';
+
+            foreach (explode("\n", $component->render()) as $i => $line) {
+                $lines[] = $line === '' ? '' : ($i === 0 ? $marker : '  ') . $line;
+            }
+            $lines[] = '';
         }
 
-        $out .= "\n  \033[90mUse ↑↓/Tab to navigate, Enter to confirm and move on\033[0m\n";
+        $lines[] = "\033[90mUse ↑↓/Tab to navigate, Enter to confirm and move on\033[0m";
         if ($this->submitFailed) {
-            $out .= "  \033[31m✗ Please fix the errors in the form.\033[0m\n";
+            $lines[] = "\033[31m✗ Please fix the errors in the form.\033[0m";
         }
 
-        return $out;
+        return implode("\n", $lines);
     }
 }

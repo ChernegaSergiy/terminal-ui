@@ -11,7 +11,8 @@ interface Component
 {
     /**
      * Renders the component's current state.
-     * @return string The frame to print; the component itself never writes to the output.
+     * @return string The lines of the component separated by "\n", without a leading or trailing
+     *                newline and without an outer margin: the caller decides where and how to place it.
      */
     public function render(): string;
 

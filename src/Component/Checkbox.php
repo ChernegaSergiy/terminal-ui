@@ -47,7 +47,10 @@ class Checkbox extends AbstractComponent
     {
         $checkbox_char = $this->checked ? '[x]' : '[ ]';
 
-        return "\n  {$checkbox_char} {$this->label}\n\n"
-            . "  \033[90m{$this->instruction}\033[0m\n";
+        return implode("\n", [
+            "{$checkbox_char} {$this->label}",
+            '',
+            "\033[90m{$this->instruction}\033[0m",
+        ]);
     }
 }

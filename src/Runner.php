@@ -42,10 +42,16 @@ class Runner
 
     /**
      * Draws a single frame: every frame replaces the previous one.
+     * The component only describes its lines; the runner owns the margin around them.
      */
     private static function draw(Component $component): void
     {
+        $frame = "\n";
+        foreach (explode("\n", $component->render()) as $line) {
+            $frame .= ($line === '' ? '' : '  ' . $line) . "\n";
+        }
+
         Terminal::clearScreen();
-        echo $component->render();
+        echo $frame;
     }
 }

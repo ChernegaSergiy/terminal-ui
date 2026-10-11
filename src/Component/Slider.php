@@ -90,25 +90,21 @@ class Slider extends AbstractComponent
      */
     public function render(): string
     {
-        $out = "\n  {$this->label}\n\n";
-
         // Progress bar
         $bar_width = 50;
         $range = $this->max - $this->min;
         $percentage = $range > 0 ? ($this->value - $this->min) / $range : 1.0;
         $filled = (int) ($bar_width * $percentage);
 
-        $out .= "  \033[36m"
-            . str_repeat("█", $filled)
-            . "\033[90m"
-            . str_repeat("░", $bar_width - $filled)
-            . "\033[0m\n\n";
-
-        $out .= "  \033[1;33m{$this->value}\033[0m / {$this->max}\n\n";
-
-        $out .= "  \033[90m{$this->changeValueInstruction}\033[0m\n";
-        $out .= "  \033[90m{$this->quickInputInstruction}\033[0m\n";
-
-        return $out;
+        return implode("\n", [
+            $this->label,
+            '',
+            "\033[36m" . str_repeat("█", $filled) . "\033[90m" . str_repeat("░", $bar_width - $filled) . "\033[0m",
+            '',
+            "\033[1;33m{$this->value}\033[0m / {$this->max}",
+            '',
+            "\033[90m{$this->changeValueInstruction}\033[0m",
+            "\033[90m{$this->quickInputInstruction}\033[0m",
+        ]);
     }
 }

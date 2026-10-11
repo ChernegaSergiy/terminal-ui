@@ -59,16 +59,17 @@ class Menu extends AbstractComponent
      */
     public function render(): string
     {
-        $out = "\n  \033[1;36m{$this->label}\033[0m\n\n";
+        $lines = ["\033[1;36m{$this->label}\033[0m", ''];
 
         foreach ($this->items as $index => $item) {
-            if ($index === $this->selected) {
-                $out .= "  \033[1;32m▶ {$item}\033[0m\n";
-            } else {
-                $out .= "    {$item}\n";
-            }
+            $lines[] = $index === $this->selected
+                ? "\033[1;32m▶ {$item}\033[0m"
+                : "  {$item}";
         }
 
-        return $out . "\n  \033[90m{$this->navigationInstruction}\033[0m\n";
+        $lines[] = '';
+        $lines[] = "\033[90m{$this->navigationInstruction}\033[0m";
+
+        return implode("\n", $lines);
     }
 }
