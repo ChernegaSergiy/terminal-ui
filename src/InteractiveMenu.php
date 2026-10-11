@@ -11,6 +11,7 @@ class InteractiveMenu implements Component
 {
     private array $items;
     private int $selected = 0;
+    private bool $cancelled = false;
     private string $title;
     private bool $done = false;
     private string $id;
@@ -42,9 +43,10 @@ class InteractiveMenu implements Component
         } elseif ($key === 'down' && $this->selected < count($this->items) - 1) {
             $this->selected++;
         } elseif ($key === 'enter') {
+            $this->cancelled = false;
             $this->done = true;
         } elseif ($key === 'esc') {
-            $this->selected = count($this->items) - 1; // Exit option
+            $this->cancelled = true;
             $this->done = true;
         }
     }
@@ -54,9 +56,12 @@ class InteractiveMenu implements Component
         return $this->done;
     }
 
-    public function getResult(): int
+    /**
+     * @return int|null The index of the chosen item, or null if the menu was cancelled with ESC.
+     */
+    public function getResult(): ?int
     {
-        return $this->selected;
+        return $this->cancelled ? null : $this->selected;
     }
 
     public function isValid(): bool
