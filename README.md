@@ -1,4 +1,4 @@
-# ChernegaSergiy/TerminalUI
+# ChernegaSergiy/TerminalUi
 
 This library provides a set of interactive components for building terminal-based user interfaces in PHP.
 
@@ -79,7 +79,7 @@ An interactive component for capturing single-line text input from the user. It 
 
 -   **Constructor**:
     ```php
-    public function __construct(string $prompt, ?string $id = null, ?\ChernegaSergiy\\TerminalUI\\Validator\\ValidatorInterface $validator = null)
+    public function __construct(string $prompt, ?string $id = null, ?\ChernegaSergiy\\TerminalUi\\Validator\\ValidatorInterface $validator = null)
     ```
     -   `$prompt` (string): The message displayed to the user asking for input.
     -   `$id` (string|null): An optional unique identifier for the input component.
@@ -92,7 +92,7 @@ To keep UI components clean and free of business logic, validation is handled ex
 #### `ValidatorInterface`
 
 ```php
-namespace ChernegaSergiy\\TerminalUI\\Validator;
+namespace ChernegaSergiy\\TerminalUi\\Validator;
 
 interface ValidatorInterface
 {
@@ -128,11 +128,11 @@ Here's a simple example demonstrating how to create a form with `SliderInput` an
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use ChernegaSergiy\TerminalUI\Form;
-use ChernegaSergiy\TerminalUI\SliderInput;
-use ChernegaSergiy\TerminalUI\ComponentRunner;
-use ChernegaSergiy\TerminalUI\InteractiveInput;
-use ChernegaSergiy\TerminalUI\Validator\CallbackValidator;
+use ChernegaSergiy\TerminalUi\Form;
+use ChernegaSergiy\TerminalUi\SliderInput;
+use ChernegaSergiy\TerminalUi\ComponentRunner;
+use ChernegaSergiy\TerminalUi\InteractiveInput;
+use ChernegaSergiy\TerminalUi\Validator\CallbackValidator;
 
 // Create components
 $slider1 = new SliderInput('Виберіть значення для Slider 1', 0, 100, 50, 5, 'slider_one');
