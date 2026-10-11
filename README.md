@@ -35,7 +35,9 @@ All interactive elements in this library implement the `Component` interface. Th
 
 ### `Key` Enum
 
-`ChernegaSergiy\TerminalUi\Terminal\Key` lists the non-printable keys the library understands: `Up`, `Down`, `Left`, `Right`, `Enter`, `Esc`, `Tab` and `Backspace`. Printable characters, including the space bar, have no case: they are passed to `handleKey()` as the plain string that was typed, so check for them with `is_string($key)`.
+`ChernegaSergiy\TerminalUi\Terminal\Key` lists the non-printable keys the library understands: `Up`, `Down`, `Left`, `Right`, `Home`, `End`, `PageUp`, `PageDown`, `Delete`, `Enter`, `Esc`, `Tab` and `Backspace`. Printable characters, including the space bar, have no case: they are passed to `handleKey()` as the plain string that was typed, so check for them with `is_string($key)`.
+
+Input is read byte by byte, so pasted text and fast typing arrive as individual keys, multi-byte UTF-8 characters (e.g. Cyrillic letters or emoji) arrive whole, and escape sequences are never split. Modifier keys are ignored (`Ctrl+↑` is `Key::Up`), and escape sequences the library does not know (Insert, function keys, Alt combinations) are skipped. A lone `Esc` is recognised after a 50 ms pause, which is how it is told apart from the start of a sequence.
 
 ```php
 public function handleKey(Key|string $key): void
@@ -76,7 +78,7 @@ The `Form` class serves as a powerful container and manager for multiple `Compon
 
 ### `Slider` Class
 
-An interactive component designed for selecting a numeric value within a defined range. Users typically adjust the value using left/right arrow keys.
+An interactive component designed for selecting a numeric value within a defined range. Users typically adjust the value using left/right arrow keys; `Home` and `End` jump to the minimum and the maximum, and typing digits enters a value directly.
 
 -   **Constructor**:
     ```php
