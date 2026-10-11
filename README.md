@@ -169,6 +169,30 @@ An interactive multiple-selection menu component. Users navigate through options
     -   `getResult(): ?array`: Returns array of selected keys/indices, or `null` if cancelled with `Esc`.
     -   `getSelectedValues(): array`: Returns array of selected label values.
 
+### `SearchSelect` Class
+
+An interactive searchable selection component. Allows users to type a search query to filter options dynamically in real time, scroll through matches using `Up`/`Down` arrow keys or `Home`/`End`, select the focused item with `Enter`, or cancel with `Esc`.
+
+-   **Constructor**:
+    ```php
+    public function __construct(
+        string $title,
+        array $options,
+        ?string $placeholder = 'Type to search...',
+        int $limit = 7,
+        string $instruction = 'Type to filter, ↑↓ to navigate, Enter to select, ESC to cancel'
+    )
+    ```
+    -   `$title` (string): The title/prompt displayed above the component.
+    -   `$options` (array): Array of options (indexed list or associative `['key' => 'Label']`).
+    -   `$placeholder` (string|null): Optional placeholder text for the search field when empty.
+    -   `$limit` (int): Maximum number of visible items in the filtered list before scrolling.
+    -   `$instruction` (string): Optional instructions text.
+
+-   **Results**:
+    -   `getResult(): int|string|null`: Returns the selected option's key, or `null` if cancelled or no match.
+    -   `getSelectedValue(): ?string`: Returns the selected option's label string.
+
 ### Validation with `ValidatorInterface`
 
 To keep UI components clean and free of business logic, validation is handled externally via the `ValidatorInterface`. This allows developers to define custom validation rules and error messages.
