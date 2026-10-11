@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ChernegaSergiy\TerminalUi\Component;
 
+use ChernegaSergiy\TerminalUi\Terminal\Ansi;
 use ChernegaSergiy\TerminalUi\Terminal\Key;
 use ChernegaSergiy\TerminalUi\Validator\ValidatorInterface;
 
@@ -64,11 +65,11 @@ class NumberInput extends AbstractComponent
      */
     public function render(): string
     {
-        $lines = [$this->label, '', "\033[1;33m{$this->current_value}_\033[0m"];
+        $lines = [$this->label, '', Ansi::style(Ansi::BOLD_YELLOW, "{$this->current_value}_")];
 
         if ($this->errorMessage !== null) {
             $lines[] = '';
-            $lines[] = "\033[31m✗ {$this->errorMessage}\033[0m";
+            $lines[] = Ansi::style(Ansi::RED, "✗ {$this->errorMessage}");
         }
 
         return implode("\n", $lines);

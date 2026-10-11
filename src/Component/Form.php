@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ChernegaSergiy\TerminalUi\Component;
 
+use ChernegaSergiy\TerminalUi\Terminal\Ansi;
 use ChernegaSergiy\TerminalUi\Terminal\Key;
 
 /**
@@ -107,11 +108,11 @@ class Form extends AbstractComponent
 
     public function render(): string
     {
-        $lines = ["\033[1;36m{$this->label}\033[0m", ''];
+        $lines = [Ansi::style(Ansi::BOLD_CYAN, $this->label), ''];
 
         foreach ($this->components as $index => $component) {
             // The marker sits on the first line of the focused field; the rest is aligned under it.
-            $marker = $index === $this->focusedIndex ? "\033[1;33m▶\033[0m " : '  ';
+            $marker = $index === $this->focusedIndex ? Ansi::style(Ansi::BOLD_YELLOW, '▶') . ' ' : '  ';
 
             foreach (explode("\n", $component->render()) as $i => $line) {
                 $lines[] = $line === '' ? '' : ($i === 0 ? $marker : '  ') . $line;
@@ -119,9 +120,9 @@ class Form extends AbstractComponent
             $lines[] = '';
         }
 
-        $lines[] = "\033[90mUse ↑↓/Tab to navigate, Enter to confirm and move on\033[0m";
+        $lines[] = Ansi::style(Ansi::GRAY, 'Use ↑↓/Tab to navigate, Enter to confirm and move on');
         if ($this->submitFailed) {
-            $lines[] = "\033[31m✗ Please fix the errors in the form.\033[0m";
+            $lines[] = Ansi::style(Ansi::RED, '✗ Please fix the errors in the form.');
         }
 
         return implode("\n", $lines);

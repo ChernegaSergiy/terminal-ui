@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ChernegaSergiy\TerminalUi\Component;
 
+use ChernegaSergiy\TerminalUi\Terminal\Ansi;
 use ChernegaSergiy\TerminalUi\Terminal\Key;
 
 /**
@@ -98,15 +99,18 @@ class Slider extends AbstractComponent
         $percentage = $range > 0 ? ($this->value - $this->min) / $range : 1.0;
         $filled = (int) ($bar_width * $percentage);
 
+        $bar = Ansi::style(Ansi::CYAN, str_repeat("█", $filled))
+            . Ansi::style(Ansi::GRAY, str_repeat("░", $bar_width - $filled));
+
         return implode("\n", [
             $this->label,
             '',
-            "\033[36m" . str_repeat("█", $filled) . "\033[90m" . str_repeat("░", $bar_width - $filled) . "\033[0m",
+            $bar,
             '',
-            "\033[1;33m{$this->value}\033[0m / {$this->max}",
+            Ansi::style(Ansi::BOLD_YELLOW, (string) $this->value) . " / {$this->max}",
             '',
-            "\033[90m{$this->changeValueInstruction}\033[0m",
-            "\033[90m{$this->quickInputInstruction}\033[0m",
+            Ansi::style(Ansi::GRAY, $this->changeValueInstruction),
+            Ansi::style(Ansi::GRAY, $this->quickInputInstruction),
         ]);
     }
 }

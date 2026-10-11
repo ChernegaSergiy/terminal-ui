@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ChernegaSergiy\TerminalUi\Component;
 
+use ChernegaSergiy\TerminalUi\Terminal\Ansi;
 use ChernegaSergiy\TerminalUi\Terminal\Key;
 
 /**
@@ -61,16 +62,16 @@ class Menu extends AbstractComponent
      */
     public function render(): string
     {
-        $lines = ["\033[1;36m{$this->label}\033[0m", ''];
+        $lines = [Ansi::style(Ansi::BOLD_CYAN, $this->label), ''];
 
         foreach ($this->items as $index => $item) {
             $lines[] = $index === $this->selected
-                ? "\033[1;32m▶ {$item}\033[0m"
+                ? Ansi::style(Ansi::BOLD_GREEN, "▶ {$item}")
                 : "  {$item}";
         }
 
         $lines[] = '';
-        $lines[] = "\033[90m{$this->navigationInstruction}\033[0m";
+        $lines[] = Ansi::style(Ansi::GRAY, $this->navigationInstruction);
 
         return implode("\n", $lines);
     }

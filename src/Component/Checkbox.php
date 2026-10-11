@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ChernegaSergiy\TerminalUi\Component;
 
+use ChernegaSergiy\TerminalUi\Terminal\Ansi;
 use ChernegaSergiy\TerminalUi\Terminal\Key;
 
 /**
@@ -52,7 +53,7 @@ class Checkbox extends AbstractComponent
         return implode("\n", [
             "{$checkbox_char} {$this->label}",
             '',
-            "\033[90m{$this->instruction}\033[0m",
+            Ansi::style(Ansi::GRAY, $this->instruction),
         ]);
     }
 }
