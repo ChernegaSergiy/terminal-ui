@@ -123,6 +123,26 @@ An interactive component for capturing a text string from the user. It supports 
     -   `$placeholder` (string|null): Optional. Placeholder text shown when input is empty.
     -   `$maxLength` (int|null): Optional. Maximum allowed character length.
 
+### `PasswordInput` Class
+
+An interactive component for secret/password input. Inherits full cursor navigation and validation from `TextInput`, but masks typed characters in the display with asterisks `*` (or a custom mask string, or hides them completely if mask is set to empty string).
+
+-   **Constructor**:
+    ```php
+    public function __construct(
+        string $prompt,
+        ?ValidatorInterface $validator = null,
+        ?string $placeholder = null,
+        ?int $maxLength = null,
+        string $mask = '*'
+    )
+    ```
+    -   `$prompt` (string): The message displayed to the user asking for input.
+    -   `$validator` (ValidatorInterface|null): Optional. A validator instance.
+    -   `$placeholder` (string|null): Optional. Placeholder text shown when input is empty.
+    -   `$maxLength` (int|null): Optional. Maximum allowed character length.
+    -   `$mask` (string): Masking character (default: `'*'`). Pass an empty string `''` to hide typed characters completely (silent input).
+
 ### `MultiSelect` Class
 
 An interactive multiple-selection menu component. Users navigate through options with arrow keys (`Up`/`Down`) or `Home`/`End`, toggle items with `Space`, toggle all items with `a`, confirm with `Enter`, or cancel with `Esc`. Supports default selections as well as minimum and maximum selection limits.
