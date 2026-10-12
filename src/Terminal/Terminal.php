@@ -14,8 +14,6 @@ class Terminal
     private static bool $alternativeScreen = false;
     private static bool $restoreRegistered = false;
     private static $inputStream = null;
-    /** @var callable|null */
-    private static $streamSelector = null;
 
     /** How long to wait (in microseconds) for the rest of an escape sequence before reading ESC as the Esc key. */
     private const ESCAPE_TIMEOUT_US = 50000;
@@ -53,8 +51,6 @@ class Terminal
      */
     public static function restore() : void
     {
-        self::$streamSelector = null;
-
         if (self::$alternativeScreen) {
             self::exitAlternativeScreen();
         }
@@ -245,11 +241,6 @@ class Terminal
         self::$inputStream = $stream;
     }
 
-    public static function setStreamSelector(?callable $selector) : void
-    {
-        self::$streamSelector = $selector;
-    }
-
     /**
      * @return resource
      */
@@ -266,16 +257,10 @@ class Terminal
             $write = null;
             $except = null;
 
-            error_clear_last();
-            $ready = null !== self::$streamSelector
-                ? (self::$streamSelector)($read, $write, $except)
-                : @stream_select($read, $write, $except, null);
+            $ready = @stream_select($read, $write, $except, null);
 
             if (false === $ready) {
-                if (str_contains(error_get_last()['message'] ?? '', 'Interrupted')) {
-                    continue; // A signal arrived; its handler has run or is about to.
-                }
-                return null;
+                continue; // A signal arrived; its handler has run or is about to.
             }
             if ($ready > 0) {
                 break;
