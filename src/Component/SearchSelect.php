@@ -170,7 +170,7 @@ class SearchSelect extends AbstractComponent
 
             foreach ($visibleKeys as $i => $key) {
                 $actualIndex = $windowStart + $i;
-                $label = $this->options[$key];
+                $label = $this->options[$key] ?? '';
 
                 if ($actualIndex === $this->selectedIndex) {
                     $lines[] = Ansi::style(Ansi::BOLD_GREEN, "▶ {$label}");
