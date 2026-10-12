@@ -3,6 +3,7 @@
 [![Latest Stable Version](https://img.shields.io/packagist/v/chernegasergiy/terminal-ui.svg?label=Packagist&logo=packagist)](https://packagist.org/packages/chernegasergiy/terminal-ui)
 [![Total Downloads](https://img.shields.io/packagist/dt/chernegasergiy/terminal-ui.svg?label=Downloads&logo=packagist)](https://packagist.org/packages/chernegasergiy/terminal-ui)
 [![License](https://img.shields.io/packagist/l/chernegasergiy/terminal-ui.svg?label=Licence&logo=open-source-initiative)](https://packagist.org/packages/chernegasergiy/terminal-ui)
+[![PHP Unit Tests](https://github.com/ChernegaSergiy/terminal-ui/actions/workflows/phpunit.yml/badge.svg)](https://github.com/ChernegaSergiy/terminal-ui/actions/workflows/phpunit.yml)
 
 This library provides a set of interactive components for building terminal-based user interfaces in PHP. It enables developers to create intuitive CLI applications with ready-to-use elements like forms, menus, sliders, checkboxes, and validated inputs.
 
