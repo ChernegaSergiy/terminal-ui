@@ -392,8 +392,6 @@ foreach ($results as $name => $value) {
     echo "{$name}: {$value}\n";
 }
 echo "------------------------\n";
-
-?>
 ```
 
 To run this example, save it as a PHP file (e.g., `my_form_app.php`) in your project's root directory and execute it from your terminal:
