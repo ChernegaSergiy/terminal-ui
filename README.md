@@ -8,6 +8,8 @@
 
 This library provides a set of interactive components for building terminal-based user interfaces in PHP. It enables developers to create intuitive CLI applications with ready-to-use elements like forms, menus, sliders, checkboxes, and validated inputs.
 
+![Terminal UI Demo](docs/demo/wizard.gif)
+
 ## Features
 
 - **Interactive Component Library**: Ready-to-use CLI widgets including text and password inputs, numbers, sliders, checkboxes, single-choice menus, multi-select lists, and searchable dropdowns.
@@ -326,17 +328,23 @@ The repository includes a dedicated [`examples/`](examples) directory with inter
   php examples/login-form.php
   ```
 
+  ![Login Form Demo](docs/demo/login.gif)
+
 - **Interactive Menu ([`examples/interactive-menu.php`](examples/interactive-menu.php))**:
   Demonstrates a console navigation loop with options, action dispatching, and cancellation:
   ```bash
   php examples/interactive-menu.php
   ```
 
+  ![Interactive Menu Demo](docs/demo/menu.gif)
+
 - **Setup Wizard ([`examples/wizard.php`](examples/wizard.php))**:
   Demonstrates a step-by-step interactive CLI setup process sequentially composing text fields, searchable dropdowns, multi-select checkboxes, and range sliders:
   ```bash
   php examples/wizard.php
   ```
+
+  ![Setup Wizard Demo](docs/demo/wizard.gif)
 
 ## Contributing
 
