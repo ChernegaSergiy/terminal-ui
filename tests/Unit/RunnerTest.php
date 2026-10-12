@@ -17,7 +17,6 @@ final class RunnerTest extends TestCase
     {
         Terminal::restore();
         Terminal::setInputStream(null);
-        Terminal::setSttyEnabled(true);
     }
 
     public function testRunExecutesLoopUntilComponentIsDone() : void
@@ -25,7 +24,6 @@ final class RunnerTest extends TestCase
         [$reader, $writer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
         fwrite($writer, "x\n");
 
-        Terminal::setSttyEnabled(false);
         Terminal::setInputStream($reader);
 
         $component = new class('Test') extends AbstractComponent {
