@@ -26,19 +26,19 @@ try {
 
     echo "\n";
     match ($selected) {
-        0 => (function (): void {
+        0 => (function () : void {
             echo "Services:\n";
             echo "  Web server: online (:8080)\n";
             echo "  Redis:      connected (1.2ms)\n";
             echo "  Workers:    active (0 pending)\n";
         })(),
-        1 => (function (): void {
+        1 => (function () : void {
             echo "Cache cleared (142 keys purged).\n";
         })(),
-        2 => (function (): void {
+        2 => (function () : void {
             echo "Database: connected to PostgreSQL 16.2 (0.8ms latency)\n";
         })(),
-        3 => (function (): void {
+        3 => (function () : void {
             echo "TerminalUI - Lightweight terminal UI components for PHP\n";
             echo "Author: Serhii Cherneha <chernegasergiy3@gmail.com>\n";
         })(),

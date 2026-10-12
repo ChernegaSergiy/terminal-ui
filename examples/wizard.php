@@ -15,12 +15,12 @@ use ChernegaSergiy\TerminalUi\Validator\CallbackValidator;
 
 try {
     // Step 1: Project name
-    $nameValidator = new CallbackValidator(static function (string $val): ?string {
+    $nameValidator = new CallbackValidator(static function (string $val) : ?string {
         $trimmed = trim($val);
         if ('' === $trimmed) {
             return 'Project name cannot be empty';
         }
-        if (!preg_match('/^[a-z0-9_-]+$/i', $trimmed)) {
+        if (! preg_match('/^[a-z0-9_-]+$/i', $trimmed)) {
             return 'Project name can only contain alphanumeric characters, dashes, and underscores';
         }
         return null;
@@ -92,4 +92,3 @@ try {
     echo "\n";
     exit($e->getCode());
 }
-

@@ -13,17 +13,17 @@ use ChernegaSergiy\TerminalUi\Terminal\SignalException;
 use ChernegaSergiy\TerminalUi\Validator\CallbackValidator;
 
 try {
-    $emailValidator = new CallbackValidator(static function (string $val): ?string {
+    $emailValidator = new CallbackValidator(static function (string $val) : ?string {
         if ('' === trim($val)) {
             return 'Email cannot be empty';
         }
-        if (!filter_var($val, FILTER_VALIDATE_EMAIL)) {
+        if (! filter_var($val, FILTER_VALIDATE_EMAIL)) {
             return 'Invalid email address';
         }
         return null;
     });
 
-    $passwordValidator = new CallbackValidator(static function (string $val): ?string {
+    $passwordValidator = new CallbackValidator(static function (string $val) : ?string {
         if (mb_strlen($val) < 6) {
             return 'Password must be at least 6 characters long';
         }
@@ -51,4 +51,3 @@ try {
     echo "\n";
     exit($e->getCode());
 }
-
