@@ -21,6 +21,11 @@
             "ChernegaSergiy\\TerminalUi\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "ChernegaSergiy\\TerminalUi\\Tests\\": "tests/"
+        }
+    },
     "minimum-stability": "stable",
     "prefer-stable": true
 }
