@@ -247,18 +247,30 @@ final class TerminalTest extends TestCase
 
     public function testEnableRawModeSuccessWhenTty() : void
     {
-        if (! Terminal::isInteractive()) {
-            $this->markTestSkipped('Not in an interactive TTY environment');
+        $process = proc_open('sleep 2', [0 => ['pty'], 1 => ['pty'], 2 => ['pty']], $pipes);
+        if (! is_resource($process)) {
+            $this->markTestSkipped('PTY is not supported on this platform');
         }
 
-        Terminal::setInputStream(null);
-        Terminal::enableRawMode();
+        try {
+            $pty = $pipes[0];
+            Terminal::setInputStream($pty);
+            $this->assertTrue(Terminal::isInteractive());
 
-        $ref = new ReflectionClass(Terminal::class);
-        $settings = $ref->getProperty('stty_settings')->getValue();
-        $this->assertNotEmpty($settings);
+            Terminal::enableRawMode();
 
-        Terminal::restore();
-        $this->assertNull($ref->getProperty('stty_settings')->getValue());
+            $ref = new ReflectionClass(Terminal::class);
+            $settings = $ref->getProperty('stty_settings')->getValue();
+            $this->assertNotEmpty($settings);
+
+            Terminal::restore();
+            $this->assertNull($ref->getProperty('stty_settings')->getValue());
+        } finally {
+            proc_terminate($process);
+            fclose($pipes[0]);
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+            proc_close($process);
+        }
     }
 }
