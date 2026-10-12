@@ -9,10 +9,11 @@ namespace ChernegaSergiy\TerminalUi\Terminal;
  */
 class Terminal
 {
-    private static $stty_settings = null;
+    private static ?string $stty_settings = null;
     private static bool $cursorHidden = false;
     private static bool $alternativeScreen = false;
     private static bool $restoreRegistered = false;
+    /** @var resource|null */
     private static $inputStream = null;
 
     /** How long to wait (in microseconds) for the rest of an escape sequence before reading ESC as the Esc key. */
@@ -101,11 +102,21 @@ class Terminal
     private static function execStty(string $command) : ?string
     {
         $process = proc_open($command, [0 => self::getInputStream(), 1 => ['pipe', 'w'], 2 => ['null']], $pipes);
+        if (! is_resource($process)) {
+            return null;
+        }
+
+        if (! isset($pipes[1]) || ! is_resource($pipes[1])) {
+            proc_close($process);
+
+            return null;
+        }
+
         $output = stream_get_contents($pipes[1]);
         fclose($pipes[1]);
         $status = proc_close($process);
 
-        return 0 === $status ? $output : null;
+        return (0 === $status && false !== $output) ? $output : null;
     }
 
     /**
@@ -247,7 +258,10 @@ class Terminal
      */
     private static function getInputStream()
     {
-        return self::$inputStream ?? STDIN;
+        $stream = self::$inputStream ?? STDIN;
+        assert(is_resource($stream));
+
+        return $stream;
     }
 
     /**
