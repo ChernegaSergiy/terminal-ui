@@ -36,13 +36,11 @@ class Terminal
         }
 
         $settings = shell_exec('stty -g 2>/dev/null');
-        if (! is_string($settings) || '' === trim($settings)) {
-            return;
+        if (is_string($settings) && '' !== trim($settings)) {
+            self::registerRestoreHandlers();
+            self::$stty_settings = $settings;
+            shell_exec('stty -icanon -echo');
         }
-
-        self::registerRestoreHandlers();
-        self::$stty_settings = $settings;
-        shell_exec('stty -icanon -echo');
     }
 
     /**
@@ -258,10 +256,6 @@ class Terminal
             $except = null;
 
             $ready = @stream_select($read, $write, $except, null);
-
-            if (false === $ready) {
-                continue; // A signal arrived; its handler has run or is about to.
-            }
             if ($ready > 0) {
                 break;
             }
