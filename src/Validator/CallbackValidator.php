@@ -6,8 +6,14 @@ namespace ChernegaSergiy\TerminalUi\Validator;
 
 class CallbackValidator implements ValidatorInterface
 {
+    /**
+     * @var callable(string): (?string)
+     */
     private $callback;
 
+    /**
+     * @param callable(string): (?string) $callback
+     */
     public function __construct(callable $callback)
     {
         $this->callback = $callback;
