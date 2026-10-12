@@ -12,9 +12,9 @@ use ChernegaSergiy\TerminalUi\Terminal\Key;
  */
 class Form extends AbstractComponent
 {
-    /** @var Component[] The fields in the order they are shown. */
+    /** @var list<Component> The fields in the order they are shown. */
     private array $components = [];
-    /** @var string[] The name of each field, in the same order as $components. */
+    /** @var list<string> The name of each field, in the same order as $components. */
     private array $names = [];
     private int $focusedIndex = 0;
     private bool $submitFailed = false;
@@ -64,12 +64,11 @@ class Form extends AbstractComponent
     {
         $this->submitFailed = false;
 
-        if (empty($this->components)) {
-            $this->done = true; // Nothing to do if no components
+        $current_component = $this->components[$this->focusedIndex] ?? null;
+        if (null === $current_component) {
+            $this->done = empty($this->components);
             return;
         }
-
-        $current_component = $this->components[$this->focusedIndex];
 
         if (Key::Down === $key || Key::Tab === $key) {
             // Move focus to the next component
@@ -107,7 +106,7 @@ class Form extends AbstractComponent
     {
         foreach ($this->components as $index => $component) {
             if (! $component->isValid()) {
-                $this->focusedIndex = $index;
+                $this->focusedIndex = (int) $index;
                 return;
             }
         }
@@ -127,7 +126,8 @@ class Form extends AbstractComponent
     {
         $results = [];
         foreach ($this->components as $index => $component) {
-            $results[$this->names[$index]] = $component->getResult();
+            $name = $this->names[$index] ?? (string) $index;
+            $results[$name] = $component->getResult();
         }
         return $results;
     }
