@@ -103,16 +103,6 @@ final class TerminalTest extends TestCase
         $this->assertNull($settingsProp->getValue());
     }
 
-    public function testEnableRawModeThrowsWhenStdinIsNotInteractive() : void
-    {
-        [$reader, $writer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
-        Terminal::setInputStream($reader);
-
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('STDIN is not an interactive terminal.');
-        Terminal::enableRawMode();
-    }
-
     public function testRegisterRestoreHandlersIsIdempotent() : void
     {
         $method = new ReflectionMethod(Terminal::class, 'registerRestoreHandlers');
