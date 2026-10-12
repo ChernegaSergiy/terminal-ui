@@ -12,6 +12,9 @@ use ChernegaSergiy\TerminalUi\Terminal\Key;
  */
 class Menu extends AbstractComponent
 {
+    /**
+     * @var list<string>
+     */
     private array $items;
     private int $selected = 0;
     private bool $cancelled = false;
@@ -20,8 +23,9 @@ class Menu extends AbstractComponent
     /**
      * Menu constructor.
      *
-     * @param string $title The title of the menu.
-     * @param array  $items An array of menu items (strings).
+     * @param string        $title                 The title of the menu.
+     * @param array<string> $items                 An array of menu items (strings).
+     * @param string        $navigationInstruction
      */
     public function __construct(
         string $title,
@@ -29,7 +33,7 @@ class Menu extends AbstractComponent
         string $navigationInstruction = 'Use ↑↓ to navigate, Enter to select, ESC to cancel'
     ) {
         parent::__construct($title);
-        $this->items = $items;
+        $this->items = array_values($items);
         $this->navigationInstruction = $navigationInstruction;
     }
 
