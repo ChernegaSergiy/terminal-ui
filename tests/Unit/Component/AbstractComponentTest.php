@@ -12,7 +12,7 @@ final class AbstractComponentTest extends TestCase
 {
     private function createComponent(string $label) : AbstractComponent
     {
-        return new class($label) extends AbstractComponent {
+        return new class ($label) extends AbstractComponent {
             public function __construct(string $label)
             {
                 parent::__construct($label);

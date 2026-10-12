@@ -119,7 +119,7 @@ final class FormTest extends TestCase
 
     public function testEnterStaysOnInvalidComponent() : void
     {
-        $validator = new CallbackValidator(static fn(string $v): ?string => strlen($v) >= 2 ? null : 'Too short');
+        $validator = new CallbackValidator(static fn (string $v) : ?string => strlen($v) >= 2 ? null : 'Too short');
         $input = new TextInput('Code:', validator: $validator);
         $form = new Form('Code Form', ['code' => $input, 'opt' => new Checkbox('Opt')]);
 
@@ -131,7 +131,7 @@ final class FormTest extends TestCase
 
     public function testSubmitFailedRedirectsToFirstInvalidField() : void
     {
-        $ageValidator = new CallbackValidator(static fn(string $v): ?string => (int) $v >= 18 ? null : 'Age >= 18');
+        $ageValidator = new CallbackValidator(static fn (string $v) : ?string => (int) $v >= 18 ? null : 'Age >= 18');
         $ageInput = new NumberInput('Age:', $ageValidator); // starts with 0 (< 18)
         $checkbox = new Checkbox('Terms:', default_checked: true);
 

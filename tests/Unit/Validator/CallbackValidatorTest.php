@@ -12,7 +12,7 @@ final class CallbackValidatorTest extends TestCase
 {
     public function testImplementsValidatorInterface() : void
     {
-        $validator = new CallbackValidator(static fn(string $v): ?string => null);
+        $validator = new CallbackValidator(static fn (string $v) : ?string => null);
 
         $this->assertInstanceOf(ValidatorInterface::class, $validator);
     }

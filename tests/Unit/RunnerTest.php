@@ -26,7 +26,7 @@ final class RunnerTest extends TestCase
 
         Terminal::setInputStream($reader);
 
-        $component = new class('Test') extends AbstractComponent {
+        $component = new class ('Test') extends AbstractComponent {
             private string $pressed = '';
 
             public function __construct(string $label)
@@ -65,7 +65,7 @@ final class RunnerTest extends TestCase
 
     public function testDrawRendersFrameWithProperMargins() : void
     {
-        $component = new class('Draw Test') extends AbstractComponent {
+        $component = new class ('Draw Test') extends AbstractComponent {
             public function __construct(string $label)
             {
                 parent::__construct($label);
@@ -76,9 +76,7 @@ final class RunnerTest extends TestCase
                 return "Title\n\nBody line";
             }
 
-            public function handleKey(Key|string $key) : void
-            {
-            }
+            public function handleKey(Key|string $key) : void {}
 
             public function getResult() : mixed
             {
