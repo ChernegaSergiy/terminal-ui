@@ -109,7 +109,7 @@ final class FormTest extends TestCase
         // Enter on first field moves focus to second
         $form->handleKey(Key::Enter);
         $this->assertFalse($form->isDone());
-        $this->assertStringContainsString('▶ Agree:', $form->render());
+        $this->assertStringContainsString('▶ [x] Agree:', $form->render());
 
         // Enter on last valid field completes form
         $form->handleKey(Key::Enter);
@@ -142,7 +142,7 @@ final class FormTest extends TestCase
 
         // Navigate directly to terms (last field)
         $form->handleKey(Key::Tab);
-        $this->assertStringContainsString('▶ Terms:', $form->render());
+        $this->assertStringContainsString('▶ [x] Terms:', $form->render());
 
         // Press Enter on valid terms, but first field is invalid
         $form->handleKey(Key::Enter);
