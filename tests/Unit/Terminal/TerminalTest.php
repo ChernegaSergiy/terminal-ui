@@ -15,6 +15,7 @@ final class TerminalTest extends TestCase
     protected function tearDown() : void
     {
         Terminal::restore();
+        Terminal::setExitHandler(null);
         if (method_exists(Terminal::class, 'setInputStream')) {
             Terminal::setInputStream(null);
         }
@@ -199,8 +200,19 @@ final class TerminalTest extends TestCase
         [$reader, $writer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
         Terminal::setInputStream($reader);
 
-        fwrite($writer, "\033[");
+        fwrite($writer, "[");
         fclose($writer);
+
+        $method = new ReflectionMethod(Terminal::class, 'readEscapeSequence');
+        $this->assertNull($method->invoke(null));
+    }
+
+    public function testReadEscapeSequenceTimeoutWithoutFinalByte() : void
+    {
+        [$reader, $writer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        Terminal::setInputStream($reader);
+
+        fwrite($writer, "[1;2");
 
         $method = new ReflectionMethod(Terminal::class, 'readEscapeSequence');
         $this->assertNull($method->invoke(null));
@@ -215,6 +227,68 @@ final class TerminalTest extends TestCase
 
         $method = new ReflectionMethod(Terminal::class, 'readContinuationBytes');
         $this->assertSame('', $method->invoke(null, 1));
+    }
+
+    public function testEnableRawModeThrowsOnWindows() : void
+    {
+        Terminal::setOsFamily('Windows');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Windows is not supported: reading single key presses requires stty.');
+        Terminal::enableRawMode();
+    }
+
+    public function testEnableRawModeThrowsWhenSttySettingsUnavailable() : void
+    {
+        if (! stream_isatty(STDIN)) {
+            $this->markTestSkipped('STDIN is not a TTY');
+        }
+
+        Terminal::setInputStream(null);
+        Terminal::setSttyExecutor(static fn(string $cmd): string => '');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Unable to read terminal settings with stty.');
+        Terminal::enableRawMode();
+    }
+
+    public function testSignalHandlerRestoresAndExits() : void
+    {
+        $exitedCode = null;
+        Terminal::setExitHandler(static function (int $code) use (&$exitedCode) : void {
+            $exitedCode = $code;
+        });
+
+        Terminal::handleSignal(SIGINT);
+
+        $this->assertSame(128 + SIGINT, $exitedCode);
+    }
+
+    public function testReadByteHandlesSignalInterruptionAndErrors() : void
+    {
+        [$reader, $writer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        fwrite($writer, 'q');
+        Terminal::setInputStream($reader);
+
+        $called = 0;
+        Terminal::setStreamSelector(static function (array &$r, ?array &$w, ?array &$e) use (&$called) {
+            if (0 === $called++) {
+                @trigger_error('Interrupted system call', E_USER_WARNING);
+                return false;
+            }
+            return @stream_select($r, $w, $e, 0);
+        });
+
+        $readByte = new ReflectionMethod(Terminal::class, 'readByte');
+        $this->assertSame('q', $readByte->invoke(null));
+
+        // Test non-interrupted select failure returns null
+        Terminal::setStreamSelector(static function (array &$r, ?array &$w, ?array &$e) : bool {
+            @trigger_error('Unrecoverable stream failure', E_USER_WARNING);
+            return false;
+        });
+
+        $this->assertNull($readByte->invoke(null));
     }
 
     public function testEnableRawModeSuccessWhenTty() : void
