@@ -14,6 +14,7 @@ class Terminal
     private static bool $alternativeScreen = false;
     private static bool $restoreRegistered = false;
     private static $inputStream = null;
+    private static bool $sttyEnabled = true;
 
     /** How long to wait (in microseconds) for the rest of an escape sequence before reading ESC as the Esc key. */
     private const ESCAPE_TIMEOUT_US = 50000;
@@ -25,6 +26,10 @@ class Terminal
      */
     public static function enableRawMode() : void
     {
+        if (! self::$sttyEnabled) {
+            return;
+        }
+
         if (PHP_OS_FAMILY === 'Windows') {
             throw new \RuntimeException('Windows is not supported: reading single key presses requires stty.');
         }
@@ -48,6 +53,8 @@ class Terminal
      */
     public static function restore() : void
     {
+        self::$sttyEnabled = true;
+
         if (self::$alternativeScreen) {
             self::exitAlternativeScreen();
         }
@@ -233,6 +240,11 @@ class Terminal
     public static function setInputStream($stream) : void
     {
         self::$inputStream = $stream;
+    }
+
+    public static function setSttyEnabled(bool $enabled) : void
+    {
+        self::$sttyEnabled = $enabled;
     }
 
     /**
