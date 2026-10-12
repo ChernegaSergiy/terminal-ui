@@ -23,6 +23,22 @@ This library provides a set of interactive components for building terminal-base
 - **Built-in ANSI Styling**: Lightweight `Ansi` helper providing standard colors, bright variants, backgrounds, and text formatting attributes without external dependencies.
 - **Zero Runtime Dependencies**: Pure PHP 8.1+ library using native streams and ANSI escape sequences.
 
+## Installation
+
+Install the library with [Composer](https://getcomposer.org):
+
+```bash
+composer require chernegasergiy/terminal-ui
+```
+
+### Requirements
+
+- PHP 8.1 or newer with the `mbstring` extension
+- An interactive POSIX terminal (Linux, macOS) with `stty` available
+- Optional: the `pcntl` extension, which lets the terminal be restored on `SIGINT`, `SIGTERM` and `SIGHUP`
+
+Windows and non-interactive input (pipes, redirected `STDIN`) are not supported. See [`Runner` Class](#runner-class) for details.
+
 ## Core Concepts
 
 ### `Component` Interface
