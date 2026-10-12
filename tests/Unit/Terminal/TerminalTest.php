@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Terminal;
 
 use ChernegaSergiy\TerminalUi\Terminal\Key;
+use ChernegaSergiy\TerminalUi\Terminal\SignalException;
 use ChernegaSergiy\TerminalUi\Terminal\Terminal;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -15,7 +16,6 @@ final class TerminalTest extends TestCase
     protected function tearDown() : void
     {
         Terminal::restore();
-        Terminal::setExitHandler(null);
         if (method_exists(Terminal::class, 'setInputStream')) {
             Terminal::setInputStream(null);
         }
@@ -252,16 +252,13 @@ final class TerminalTest extends TestCase
         Terminal::enableRawMode();
     }
 
-    public function testSignalHandlerRestoresAndExits() : void
+    public function testSignalHandlerRestoresAndThrowsSignalException() : void
     {
-        $exitedCode = null;
-        Terminal::setExitHandler(static function (int $code) use (&$exitedCode) : void {
-            $exitedCode = $code;
-        });
+        $this->expectException(SignalException::class);
+        $this->expectExceptionCode(128 + SIGINT);
+        $this->expectExceptionMessage(sprintf('Process interrupted by signal %d', SIGINT));
 
         Terminal::handleSignal(SIGINT);
-
-        $this->assertSame(128 + SIGINT, $exitedCode);
     }
 
     public function testReadByteHandlesSignalInterruptionAndErrors() : void
