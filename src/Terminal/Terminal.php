@@ -13,6 +13,7 @@ class Terminal
     private static bool $cursorHidden = false;
     private static bool $alternativeScreen = false;
     private static bool $restoreRegistered = false;
+    private static $inputStream = null;
 
     /** How long to wait (in microseconds) for the rest of an escape sequence before reading ESC as the Esc key. */
     private const ESCAPE_TIMEOUT_US = 50000;
@@ -27,7 +28,7 @@ class Terminal
         if (PHP_OS_FAMILY === 'Windows') {
             throw new \RuntimeException('Windows is not supported: reading single key presses requires stty.');
         }
-        if (! stream_isatty(STDIN)) {
+        if (! stream_isatty(self::getInputStream())) {
             throw new \RuntimeException('STDIN is not an interactive terminal.');
         }
 
@@ -226,10 +227,27 @@ class Terminal
      * signal, so a blocking fread() would keep Ctrl+C waiting until the next key press, whereas
      * select() is interrupted at once and lets the handlers from registerRestoreHandlers() run.
      */
+    /**
+     * @param resource|null $stream
+     */
+    public static function setInputStream($stream) : void
+    {
+        self::$inputStream = $stream;
+    }
+
+    /**
+     * @return resource
+     */
+    private static function getInputStream()
+    {
+        return self::$inputStream ?? STDIN;
+    }
+
     private static function readByte() : ?string
     {
         while (true) {
-            $read = [STDIN];
+            $stream = self::getInputStream();
+            $read = [$stream];
             $write = null;
             $except = null;
 
@@ -247,7 +265,7 @@ class Terminal
             }
         }
 
-        $byte = fread(STDIN, 1);
+        $byte = fread(self::getInputStream(), 1);
 
         return (false === $byte || '' === $byte) ? null : $byte;
     }
@@ -258,7 +276,8 @@ class Terminal
      */
     private static function inputPending() : bool
     {
-        $read = [STDIN];
+        $stream = self::getInputStream();
+        $read = [$stream];
         $write = null;
         $except = null;
 
