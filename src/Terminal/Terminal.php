@@ -14,10 +14,6 @@ class Terminal
     private static bool $alternativeScreen = false;
     private static bool $restoreRegistered = false;
     private static $inputStream = null;
-    private static bool $sttyEnabled = true;
-    private static ?string $osFamily = null;
-    /** @var callable|null */
-    private static $sttyExecutor = null;
     /** @var callable|null */
     private static $streamSelector = null;
 
@@ -25,31 +21,30 @@ class Terminal
     private const ESCAPE_TIMEOUT_US = 50000;
 
     /**
-     * Enables raw mode for terminal input.
-     *
-     * @throws \RuntimeException On Windows, when STDIN is not a terminal, or when stty is unavailable.
+     * Checks whether the current input stream is attached to an interactive terminal.
+     */
+    public static function isInteractive() : bool
+    {
+        return 'Windows' !== PHP_OS_FAMILY && stream_isatty(self::getInputStream());
+    }
+
+    /**
+     * Enables raw mode for terminal input if running in an interactive terminal.
      */
     public static function enableRawMode() : void
     {
-        if (! self::$sttyEnabled) {
+        if (! self::isInteractive()) {
             return;
         }
 
-        if ('Windows' === self::getOsFamily()) {
-            throw new \RuntimeException('Windows is not supported: reading single key presses requires stty.');
-        }
-        if (! stream_isatty(self::getInputStream())) {
-            throw new \RuntimeException('STDIN is not an interactive terminal.');
-        }
-
-        $settings = self::execStty('stty -g 2>/dev/null');
+        $settings = shell_exec('stty -g 2>/dev/null');
         if (! is_string($settings) || '' === trim($settings)) {
-            throw new \RuntimeException('Unable to read terminal settings with stty.');
+            return;
         }
 
         self::registerRestoreHandlers();
         self::$stty_settings = $settings;
-        self::execStty('stty -icanon -echo');
+        shell_exec('stty -icanon -echo');
     }
 
     /**
@@ -58,9 +53,6 @@ class Terminal
      */
     public static function restore() : void
     {
-        self::$sttyEnabled = true;
-        self::$osFamily = null;
-        self::$sttyExecutor = null;
         self::$streamSelector = null;
 
         if (self::$alternativeScreen) {
@@ -107,7 +99,7 @@ class Terminal
     public static function disableRawMode() : void
     {
         if (null !== self::$stty_settings) {
-            self::execStty('stty ' . trim(self::$stty_settings));
+            shell_exec('stty ' . trim(self::$stty_settings));
             self::$stty_settings = null;
         }
     }
@@ -251,37 +243,6 @@ class Terminal
     public static function setInputStream($stream) : void
     {
         self::$inputStream = $stream;
-    }
-
-    public static function setSttyEnabled(bool $enabled) : void
-    {
-        self::$sttyEnabled = $enabled;
-    }
-
-    public static function setOsFamily(?string $osFamily) : void
-    {
-        self::$osFamily = $osFamily;
-    }
-
-    private static function getOsFamily() : string
-    {
-        return self::$osFamily ?? PHP_OS_FAMILY;
-    }
-
-    public static function setSttyExecutor(?callable $executor) : void
-    {
-        self::$sttyExecutor = $executor;
-    }
-
-    private static function execStty(string $command) : ?string
-    {
-        if (null !== self::$sttyExecutor) {
-            return (self::$sttyExecutor)($command);
-        }
-
-        $result = shell_exec($command);
-
-        return is_string($result) ? $result : null;
     }
 
     public static function setStreamSelector(?callable $selector) : void
