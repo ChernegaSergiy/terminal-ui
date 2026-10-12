@@ -82,8 +82,10 @@ class MultiSelect extends AbstractComponent
         } elseif (Key::End === $key) {
             $this->cursor = max(0, $count - 1);
         } elseif (' ' === $key) {
-            $currentKey = $this->keys[$this->cursor];
-            $this->selected[$currentKey] = ! ($this->selected[$currentKey] ?? false);
+            if (isset($this->keys[$this->cursor])) {
+                $currentKey = $this->keys[$this->cursor];
+                $this->selected[$currentKey] = ! ($this->selected[$currentKey] ?? false);
+            }
         } elseif ('a' === $key || 'A' === $key) {
             $hasAny = in_array(true, $this->selected, true);
             foreach ($this->keys as $k) {
@@ -154,7 +156,7 @@ class MultiSelect extends AbstractComponent
     {
         $values = [];
         foreach ($this->getSelectedKeys() as $key) {
-            $values[$key] = $this->options[$key];
+            $values[$key] = $this->options[$key] ?? '';
         }
         return $values;
     }
@@ -174,7 +176,7 @@ class MultiSelect extends AbstractComponent
         $lines = [Ansi::style(Ansi::BOLD_CYAN, $this->label), ''];
 
         foreach ($this->keys as $index => $key) {
-            $label = $this->options[$key];
+            $label = $this->options[$key] ?? '';
             $isChecked = $this->selected[$key] ?? false;
             $box = $isChecked ? '[x]' : '[ ]';
 
