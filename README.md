@@ -8,6 +8,17 @@
 
 This library provides a set of interactive components for building terminal-based user interfaces in PHP. It enables developers to create intuitive CLI applications with ready-to-use elements like forms, menus, sliders, checkboxes, and validated inputs.
 
+## Features
+
+- **Interactive Component Library**: Ready-to-use CLI widgets including text and password inputs, numbers, sliders, checkboxes, single-choice menus, multi-select lists, and searchable dropdowns.
+- **Composite Form Engine**: Multi-field form orchestration with `Tab` / `Shift+Tab` keyboard navigation, validation rules, and automatic focus redirection on invalid submission.
+- **Alternative Screen Buffer**: Automatically switches to the terminal's alternative screen and hides the cursor, seamlessly restoring the original screen state upon exit.
+- **POSIX Signal Handling**: Traps `SIGINT`, `SIGTERM`, and `SIGHUP` via `SignalException`, ensuring clean terminal state restoration before process termination.
+- **Headless & Pipeline Safe**: Intelligently inspects stream interactivity (`stream_isatty`) and executes `stty` on active input streams, running safely in non-interactive pipelines and CI.
+- **UTF-8 & Non-Blocking Input**: Reads raw terminal input byte-by-byte via `stream_select()`, correctly assembling multi-byte UTF-8 sequences (Cyrillic, emoji) and ANSI escape codes.
+- **Built-in ANSI Styling**: Lightweight `Ansi` helper providing standard colors, bright variants, backgrounds, and text formatting attributes without external dependencies.
+- **Zero Runtime Dependencies**: Pure PHP 8.1+ library using native streams and ANSI escape sequences.
+
 ## Core Concepts
 
 ### `Component` Interface
