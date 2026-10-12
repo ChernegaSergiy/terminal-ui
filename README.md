@@ -361,7 +361,7 @@ $slider2 = new Slider('Choose a value for Slider 2', 10, 20, 15, 1);
 
 // Create a validator for age input
 $ageValidator = new CallbackValidator(function (string $value): ?string {
-    if (empty($value)) {
+    if ('' === $value) {
         return 'Age is required.';
     }
     if (!is_numeric($value)) {
