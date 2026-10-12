@@ -104,20 +104,12 @@ final class TerminalTest extends TestCase
 
     public function testEnableRawModeThrowsWhenStdinIsNotInteractive() : void
     {
-        if (PHP_OS_FAMILY === 'Windows') {
-            $this->expectException(\RuntimeException::class);
-            $this->expectExceptionMessage('Windows is not supported');
-            Terminal::enableRawMode();
-            return;
-        }
+        [$reader, $writer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        Terminal::setInputStream($reader);
 
-        if (! stream_isatty(STDIN)) {
-            $this->expectException(\RuntimeException::class);
-            $this->expectExceptionMessage('STDIN is not an interactive terminal.');
-            Terminal::enableRawMode();
-        } else {
-            $this->markTestSkipped('STDIN is an interactive TTY in this environment');
-        }
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('STDIN is not an interactive terminal.');
+        Terminal::enableRawMode();
     }
 
     public function testRegisterRestoreHandlersIsIdempotent() : void
@@ -154,30 +146,12 @@ final class TerminalTest extends TestCase
 
     public function testReadKeyFromStream() : void
     {
-        if (! method_exists(Terminal::class, 'setInputStream')) {
-            $this->markTestSkipped('setInputStream is not yet implemented');
-        }
+        [$reader, $writer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        Terminal::setInputStream($reader);
 
-        $stream = fopen('php://memory', 'r+');
-        fwrite($stream, "a\n\r\t\x7f\x08");
-        // UTF-8 2-byte, 3-byte, 4-byte
-        fwrite($stream, "ї€😀");
-        // Esc alone
-        fwrite($stream, "\033");
-        // Arrow keys and Home/End
-        fwrite($stream, "\033[A\033[B\033[C\033[D\033[H\033[F");
-        // Tilde keys: Delete, PageUp, PageDown
-        fwrite($stream, "\033[3~\033[5~\033[6~");
-        // SS3 key: O followed by A
-        fwrite($stream, "\033OA");
-        // Unknown sequences
-        fwrite($stream, "\033[99~b");
-        fwrite($stream, "\033Xb");
-        // Stray continuation byte followed by c
-        fwrite($stream, "\x80c");
-        rewind($stream);
-
-        Terminal::setInputStream($stream);
+        fwrite($writer, "a\n\r\t\x7f\x08");
+        fwrite($writer, "ї€😀");
+        fwrite($writer, "\033");
 
         $this->assertSame('a', Terminal::readKey());
         $this->assertSame(Key::Enter, Terminal::readKey());
@@ -192,6 +166,7 @@ final class TerminalTest extends TestCase
 
         $this->assertSame(Key::Esc, Terminal::readKey());
 
+        fwrite($writer, "\033[A\033[B\033[C\033[D\033[H\033[F");
         $this->assertSame(Key::Up, Terminal::readKey());
         $this->assertSame(Key::Down, Terminal::readKey());
         $this->assertSame(Key::Right, Terminal::readKey());
@@ -199,18 +174,63 @@ final class TerminalTest extends TestCase
         $this->assertSame(Key::Home, Terminal::readKey());
         $this->assertSame(Key::End, Terminal::readKey());
 
+        fwrite($writer, "\033[3~\033[5~\033[6~");
         $this->assertSame(Key::Delete, Terminal::readKey());
         $this->assertSame(Key::PageUp, Terminal::readKey());
         $this->assertSame(Key::PageDown, Terminal::readKey());
 
+        fwrite($writer, "\033OA");
         $this->assertSame(Key::Up, Terminal::readKey());
 
+        fwrite($writer, "\033[99~b\033Xb\x80c");
         $this->assertSame('b', Terminal::readKey());
         $this->assertSame('b', Terminal::readKey());
         $this->assertSame('c', Terminal::readKey());
 
+        fclose($writer);
+
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('STDIN was closed while waiting for a key press.');
         Terminal::readKey();
+    }
+
+    public function testReadEscapeSequenceEofDuringCsi() : void
+    {
+        [$reader, $writer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        Terminal::setInputStream($reader);
+
+        fwrite($writer, "\033[");
+        fclose($writer);
+
+        $method = new ReflectionMethod(Terminal::class, 'readEscapeSequence');
+        $this->assertNull($method->invoke(null));
+    }
+
+    public function testReadContinuationBytesEof() : void
+    {
+        [$reader, $writer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        Terminal::setInputStream($reader);
+
+        fclose($writer);
+
+        $method = new ReflectionMethod(Terminal::class, 'readContinuationBytes');
+        $this->assertSame('', $method->invoke(null, 1));
+    }
+
+    public function testEnableRawModeSuccessWhenTty() : void
+    {
+        if (! stream_isatty(STDIN)) {
+            $this->markTestSkipped('STDIN is not a TTY');
+        }
+
+        Terminal::setInputStream(null);
+        Terminal::enableRawMode();
+
+        $ref = new ReflectionClass(Terminal::class);
+        $settings = $ref->getProperty('stty_settings')->getValue();
+        $this->assertNotEmpty($settings);
+
+        Terminal::restore();
+        $this->assertNull($ref->getProperty('stty_settings')->getValue());
     }
 }
