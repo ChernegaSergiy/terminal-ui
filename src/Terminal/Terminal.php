@@ -235,13 +235,6 @@ class Terminal
     }
 
     /**
-     * Reads one byte, blocking until it is available; null on EOF.
-     *
-     * The wait happens in select() rather than in fread(): PHP restarts an interrupted read after a
-     * signal, so a blocking fread() would keep Ctrl+C waiting until the next key press, whereas
-     * select() is interrupted at once and lets the handlers from registerRestoreHandlers() run.
-     */
-    /**
      * @param resource|null $stream
      */
     public static function setInputStream($stream) : void
@@ -257,6 +250,13 @@ class Terminal
         return self::$inputStream ?? STDIN;
     }
 
+    /**
+     * Reads one byte, blocking until it is available; null on EOF.
+     *
+     * The wait happens in select() rather than in fread(): PHP restarts an interrupted read after a
+     * signal, so a blocking fread() would keep Ctrl+C waiting until the next key press, whereas
+     * select() is interrupted at once and lets the handlers from registerRestoreHandlers() run.
+     */
     private static function readByte() : ?string
     {
         while (true) {
