@@ -11,15 +11,20 @@ permissions:
 
 jobs:
   tests:
+    name: PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1', '8.2', '8.3', '8.4']
     steps:
       - uses: actions/checkout@v7
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
-          coverage: xdebug
+          php-version: ${{ matrix.php }}
+          coverage: ${{ matrix.php == '8.4' && 'xdebug' || 'none' }}
 
       - name: Validate composer.json
         run: composer validate --strict
@@ -28,19 +33,25 @@ jobs:
         uses: actions/cache@v6
         with:
           path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.json') }}
+          key: ${{ runner.os }}-php-${{ matrix.php }}-${{ hashFiles('**/composer.json') }}
           restore-keys: |
-            ${{ runner.os }}-php-
+            ${{ runner.os }}-php-${{ matrix.php }}-
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
+      - name: Run PHPUnit
+        if: matrix.php != '8.4'
+        run: vendor/bin/phpunit --display-warnings
+
       - name: Run PHPUnit with coverage
+        if: matrix.php == '8.4'
         run: vendor/bin/phpunit --coverage-clover clover.xml --display-warnings
         env:
           XDEBUG_MODE: coverage
 
       - name: Upload coverage artifact
+        if: matrix.php == '8.4'
         uses: actions/upload-artifact@v7
         with:
           name: clover-report
