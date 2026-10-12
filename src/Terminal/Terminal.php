@@ -35,11 +35,11 @@ class Terminal
             return;
         }
 
-        $settings = shell_exec('stty -g 2>/dev/null');
+        $settings = self::execStty('stty -g');
         if (is_string($settings) && '' !== trim($settings)) {
             self::registerRestoreHandlers();
             self::$stty_settings = $settings;
-            shell_exec('stty -icanon -echo');
+            self::execStty('stty -icanon -echo');
         }
     }
 
@@ -93,9 +93,19 @@ class Terminal
     public static function disableRawMode() : void
     {
         if (null !== self::$stty_settings) {
-            shell_exec('stty ' . trim(self::$stty_settings));
+            self::execStty('stty ' . trim(self::$stty_settings));
             self::$stty_settings = null;
         }
+    }
+
+    private static function execStty(string $command) : ?string
+    {
+        $process = proc_open($command, [0 => self::getInputStream(), 1 => ['pipe', 'w'], 2 => ['null']], $pipes);
+        $output = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+        $status = proc_close($process);
+
+        return 0 === $status ? $output : null;
     }
 
     /**
