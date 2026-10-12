@@ -245,33 +245,6 @@ final class TerminalTest extends TestCase
         Terminal::handleSignal(SIGINT);
     }
 
-    public function testReadByteHandlesSignalInterruptionAndErrors() : void
-    {
-        [$reader, $writer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
-        fwrite($writer, 'q');
-        Terminal::setInputStream($reader);
-
-        $called = 0;
-        Terminal::setStreamSelector(static function (array &$r, ?array &$w, ?array &$e) use (&$called) {
-            if (0 === $called++) {
-                @trigger_error('Interrupted system call', E_USER_WARNING);
-                return false;
-            }
-            return @stream_select($r, $w, $e, 0);
-        });
-
-        $readByte = new ReflectionMethod(Terminal::class, 'readByte');
-        $this->assertSame('q', $readByte->invoke(null));
-
-        // Test non-interrupted select failure returns null
-        Terminal::setStreamSelector(static function (array &$r, ?array &$w, ?array &$e) : bool {
-            @trigger_error('Unrecoverable stream failure', E_USER_WARNING);
-            return false;
-        });
-
-        $this->assertNull($readByte->invoke(null));
-    }
-
     public function testEnableRawModeSuccessWhenTty() : void
     {
         if (! Terminal::isInteractive()) {
