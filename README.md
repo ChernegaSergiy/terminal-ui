@@ -1,3 +1,5 @@
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
+
 # terminal-ui
 
 [![Latest Stable Version](https://img.shields.io/packagist/v/chernegasergiy/terminal-ui.svg?label=Packagist&logo=packagist)](https://packagist.org/packages/chernegasergiy/terminal-ui)
