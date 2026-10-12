@@ -229,27 +229,21 @@ final class TerminalTest extends TestCase
         $this->assertSame('', $method->invoke(null, 1));
     }
 
-    public function testEnableRawModeThrowsOnWindows() : void
+    public function testIsInteractiveReturnsBoolean() : void
     {
-        Terminal::setOsFamily('Windows');
-
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Windows is not supported: reading single key presses requires stty.');
-        Terminal::enableRawMode();
+        $this->assertIsBool(Terminal::isInteractive());
     }
 
-    public function testEnableRawModeThrowsWhenSttySettingsUnavailable() : void
+    public function testEnableRawModeGracefullySkipsWhenNonInteractive() : void
     {
-        if (! stream_isatty(STDIN)) {
-            $this->markTestSkipped('STDIN is not a TTY');
-        }
+        [$reader, $writer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        Terminal::setInputStream($reader);
 
-        Terminal::setInputStream(null);
-        Terminal::setSttyExecutor(static fn(string $cmd): string => '');
-
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Unable to read terminal settings with stty.');
+        $this->assertFalse(Terminal::isInteractive());
         Terminal::enableRawMode();
+
+        $ref = new ReflectionClass(Terminal::class);
+        $this->assertNull($ref->getProperty('stty_settings')->getValue());
     }
 
     public function testSignalHandlerRestoresAndThrowsSignalException() : void
@@ -290,8 +284,8 @@ final class TerminalTest extends TestCase
 
     public function testEnableRawModeSuccessWhenTty() : void
     {
-        if (! stream_isatty(STDIN)) {
-            $this->markTestSkipped('STDIN is not a TTY');
+        if (! Terminal::isInteractive()) {
+            $this->markTestSkipped('Not in an interactive TTY environment');
         }
 
         Terminal::setInputStream(null);
