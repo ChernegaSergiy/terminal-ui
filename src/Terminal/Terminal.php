@@ -15,6 +15,13 @@ class Terminal
     private static bool $restoreRegistered = false;
     private static $inputStream = null;
     private static bool $sttyEnabled = true;
+    private static ?string $osFamily = null;
+    /** @var callable|null */
+    private static $sttyExecutor = null;
+    /** @var callable|null */
+    private static $exitHandler = null;
+    /** @var callable|null */
+    private static $streamSelector = null;
 
     /** How long to wait (in microseconds) for the rest of an escape sequence before reading ESC as the Esc key. */
     private const ESCAPE_TIMEOUT_US = 50000;
@@ -30,21 +37,21 @@ class Terminal
             return;
         }
 
-        if (PHP_OS_FAMILY === 'Windows') {
+        if ('Windows' === self::getOsFamily()) {
             throw new \RuntimeException('Windows is not supported: reading single key presses requires stty.');
         }
         if (! stream_isatty(self::getInputStream())) {
             throw new \RuntimeException('STDIN is not an interactive terminal.');
         }
 
-        $settings = shell_exec('stty -g 2>/dev/null');
+        $settings = self::execStty('stty -g 2>/dev/null');
         if (! is_string($settings) || '' === trim($settings)) {
             throw new \RuntimeException('Unable to read terminal settings with stty.');
         }
 
         self::registerRestoreHandlers();
         self::$stty_settings = $settings;
-        shell_exec('stty -icanon -echo');
+        self::execStty('stty -icanon -echo');
     }
 
     /**
@@ -54,6 +61,9 @@ class Terminal
     public static function restore() : void
     {
         self::$sttyEnabled = true;
+        self::$osFamily = null;
+        self::$sttyExecutor = null;
+        self::$streamSelector = null;
 
         if (self::$alternativeScreen) {
             self::exitAlternativeScreen();
@@ -80,14 +90,17 @@ class Terminal
 
         if (function_exists('pcntl_signal') && function_exists('pcntl_async_signals')) {
             pcntl_async_signals(true);
-            $handler = static function (int $signal) : void {
-                self::restore();
-                exit(128 + $signal);
-            };
+            $handler = [self::class, 'handleSignal'];
             foreach ([SIGINT, SIGTERM, SIGHUP] as $signal) {
                 pcntl_signal($signal, $handler);
             }
         }
+    }
+
+    public static function handleSignal(int $signal) : void
+    {
+        self::restore();
+        self::terminate(128 + $signal);
     }
 
     /**
@@ -96,7 +109,7 @@ class Terminal
     public static function disableRawMode() : void
     {
         if (null !== self::$stty_settings) {
-            shell_exec('stty ' . trim(self::$stty_settings));
+            self::execStty('stty ' . trim(self::$stty_settings));
             self::$stty_settings = null;
         }
     }
@@ -247,6 +260,52 @@ class Terminal
         self::$sttyEnabled = $enabled;
     }
 
+    public static function setOsFamily(?string $osFamily) : void
+    {
+        self::$osFamily = $osFamily;
+    }
+
+    private static function getOsFamily() : string
+    {
+        return self::$osFamily ?? PHP_OS_FAMILY;
+    }
+
+    public static function setSttyExecutor(?callable $executor) : void
+    {
+        self::$sttyExecutor = $executor;
+    }
+
+    private static function execStty(string $command) : ?string
+    {
+        if (null !== self::$sttyExecutor) {
+            return (self::$sttyExecutor)($command);
+        }
+
+        $result = shell_exec($command);
+
+        return is_string($result) ? $result : null;
+    }
+
+    public static function setExitHandler(?callable $handler) : void
+    {
+        self::$exitHandler = $handler;
+    }
+
+    private static function terminate(int $code) : void
+    {
+        if (null !== self::$exitHandler) {
+            (self::$exitHandler)($code);
+            return;
+        }
+
+        exit($code);
+    }
+
+    public static function setStreamSelector(?callable $selector) : void
+    {
+        self::$streamSelector = $selector;
+    }
+
     /**
      * @return resource
      */
@@ -264,7 +323,9 @@ class Terminal
             $except = null;
 
             error_clear_last();
-            $ready = @stream_select($read, $write, $except, null);
+            $ready = null !== self::$streamSelector
+                ? (self::$streamSelector)($read, $write, $except)
+                : @stream_select($read, $write, $except, null);
 
             if (false === $ready) {
                 if (str_contains(error_get_last()['message'] ?? '', 'Interrupted')) {
