@@ -23,7 +23,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "ChernegaSergiy\\TerminalUi\\Tests\\": "tests/"
+            "Tests\\": "tests/"
         }
     },
     "minimum-stability": "stable",
