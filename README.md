@@ -70,6 +70,23 @@ All interactive elements in this library implement the `Component` interface. Th
     -   **Details**: Used to display descriptive text to the user, often as part of the `render()` method or by a parent `Form`.
 
 
+### `AbstractComponent` Class
+
+A base class that implements the parts of the `Component` interface every component shares, so a custom component only has to describe its own behaviour.
+
+-   **Provides**:
+    -   `getLabel(): string` returns the label passed to the constructor (also available to subclasses as `$this->label`).
+    -   `isDone(): bool` returns the `$done` flag. A subclass sets `$this->done = true` when the interaction is finished.
+    -   `isValid(): bool` returns `true` by default. Override it when the component has validation rules.
+
+-   **Constructor**:
+    ```php
+    protected function __construct(string $label)
+    ```
+    -   `$label` (string): The title or prompt of the component. The constructor is `protected`, so a subclass calls `parent::__construct($label)` from its own constructor.
+
+-   **To implement**: `render(): string`, `handleKey(Key|string $key): void` and `getResult(): mixed`.
+
 ### `Key` Enum
 
 `ChernegaSergiy\TerminalUi\Terminal\Key` lists the non-printable keys the library understands: `Up`, `Down`, `Left`, `Right`, `Home`, `End`, `PageUp`, `PageDown`, `Delete`, `Enter`, `Esc`, `Tab` and `Backspace`. Printable characters, including the space bar, have no case: they are passed to `handleKey()` as the plain string that was typed, so check for them with `is_string($key)`.
@@ -180,6 +197,42 @@ An interactive component for secret/password input. Inherits full cursor navigat
     -   `$maxLength` (int|null): Optional. Maximum allowed character length.
     -   `$mask` (string): Masking character (default: `'*'`). Pass an empty string `''` to hide typed characters completely (silent input).
 
+### `Checkbox` Class
+
+An interactive component for a single yes/no choice. `Space` toggles the checkbox and `Enter` confirms it.
+
+-   **Constructor**:
+    ```php
+    public function __construct(
+        string $label,
+        bool $default_checked = false,
+        string $instruction = 'Press Space to toggle, Enter to confirm'
+    )
+    ```
+    -   `$label` (string): The text displayed next to the checkbox.
+    -   `$default_checked` (bool): Optional. The initial state (default: `false`).
+    -   `$instruction` (string): Optional. The instruction message shown under the checkbox.
+
+-   **Result**: `getResult(): bool` returns `true` if the checkbox is checked.
+
+### `Menu` Class
+
+An interactive single-choice menu. Users move through the items with `Up`/`Down` (`Home` and `End` jump to the first and the last item), select the highlighted item with `Enter`, or cancel with `Esc`.
+
+-   **Constructor**:
+    ```php
+    public function __construct(
+        string $title,
+        array $items,
+        string $navigationInstruction = 'Use ↑↓ to navigate, Enter to select, ESC to cancel'
+    )
+    ```
+    -   `$title` (string): The title displayed above the menu.
+    -   `$items` (array): A list of item labels (strings).
+    -   `$navigationInstruction` (string): Optional. The instruction message shown under the items.
+
+-   **Result**: `getResult(): ?int` returns the zero-based index of the chosen item, or `null` if the menu was cancelled with `Esc`.
+
 ### `MultiSelect` Class
 
 An interactive multiple-selection menu component. Users navigate through options with arrow keys (`Up`/`Down`) or `Home`/`End`, toggle items with `Space`, toggle all items with `a`, confirm with `Enter`, or cancel with `Esc`. Supports default selections as well as minimum and maximum selection limits.
@@ -267,6 +320,21 @@ This utility class provides a static method to run any `Component` (including a 
 The runner draws every frame in the terminal's alternative screen, so the output printed before it started is left untouched, and it restores the terminal (input mode, cursor, screen) when it finishes, fails, or the process is interrupted.
 
 **Requirements**: an interactive POSIX terminal with `stty` available. Windows and non-interactive input (pipes, redirected STDIN) are not supported and raise a `RuntimeException`. The optional `pcntl` extension lets the terminal be restored on `SIGINT`/`SIGTERM`/`SIGHUP`.
+
+### `SignalException` Class
+
+`ChernegaSergiy\TerminalUi\Terminal\SignalException` extends `RuntimeException`. It is thrown when the process receives `SIGINT`, `SIGTERM` or `SIGHUP` while a component is running (this requires the optional `pcntl` extension). The terminal is already restored when the exception reaches your code.
+
+-   `getSignal(): int` returns the number of the received signal.
+-   The exception code is `128 + signal`, the conventional exit status after a signal, so it can be passed straight to `exit()`.
+
+```php
+try {
+    $selected = Runner::run($menu);
+} catch (SignalException $e) {
+    exit($e->getCode());
+}
+```
 
 ### Colours and `NO_COLOR`
 
