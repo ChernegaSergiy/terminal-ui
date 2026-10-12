@@ -19,8 +19,6 @@ class Terminal
     /** @var callable|null */
     private static $sttyExecutor = null;
     /** @var callable|null */
-    private static $exitHandler = null;
-    /** @var callable|null */
     private static $streamSelector = null;
 
     /** How long to wait (in microseconds) for the rest of an escape sequence before reading ESC as the Esc key. */
@@ -100,7 +98,7 @@ class Terminal
     public static function handleSignal(int $signal) : void
     {
         self::restore();
-        self::terminate(128 + $signal);
+        throw new SignalException($signal);
     }
 
     /**
@@ -284,21 +282,6 @@ class Terminal
         $result = shell_exec($command);
 
         return is_string($result) ? $result : null;
-    }
-
-    public static function setExitHandler(?callable $handler) : void
-    {
-        self::$exitHandler = $handler;
-    }
-
-    private static function terminate(int $code) : void
-    {
-        if (null !== self::$exitHandler) {
-            (self::$exitHandler)($code);
-            return;
-        }
-
-        exit($code);
     }
 
     public static function setStreamSelector(?callable $selector) : void
