@@ -101,22 +101,14 @@ class Terminal
 
     private static function execStty(string $command) : ?string
     {
+        /** @var resource $process */
         $process = proc_open($command, [0 => self::getInputStream(), 1 => ['pipe', 'w'], 2 => ['null']], $pipes);
-        if (! is_resource($process)) {
-            return null;
-        }
-
-        if (! isset($pipes[1]) || ! is_resource($pipes[1])) {
-            proc_close($process);
-
-            return null;
-        }
-
+        /** @var array{1: resource} $pipes */
         $output = stream_get_contents($pipes[1]);
         fclose($pipes[1]);
         $status = proc_close($process);
 
-        return (0 === $status && false !== $output) ? $output : null;
+        return 0 === $status && false !== $output ? $output : null;
     }
 
     /**
@@ -258,10 +250,8 @@ class Terminal
      */
     private static function getInputStream()
     {
-        $stream = self::$inputStream ?? STDIN;
-        assert(is_resource($stream));
-
-        return $stream;
+        /** @var resource */
+        return self::$inputStream ?? STDIN;
     }
 
     /**
