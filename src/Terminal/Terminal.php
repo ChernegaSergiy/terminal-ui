@@ -25,6 +25,7 @@ class Terminal
     private static bool $resizeRegistered = false;
     /** @var callable|int|null */
     private static mixed $previousResizeHandler = null;
+    private static ?bool $previousAsyncSignals = null;
 
     /** How long to wait (in microseconds) for the rest of an escape sequence before reading ESC as the Esc key. */
     private const ESCAPE_TIMEOUT_US = 50000;
@@ -86,7 +87,7 @@ class Terminal
         register_shutdown_function([self::class, 'restore']);
 
         if (function_exists('pcntl_signal') && function_exists('pcntl_async_signals')) {
-            pcntl_async_signals(true);
+            self::$previousAsyncSignals ??= pcntl_async_signals(true);
             $handler = [self::class, 'handleSignal'];
             foreach ([SIGINT, SIGTERM, SIGHUP] as $signal) {
                 pcntl_signal($signal, $handler);
@@ -102,7 +103,7 @@ class Terminal
         }
 
         if (function_exists('pcntl_signal') && function_exists('pcntl_async_signals') && defined('SIGWINCH')) {
-            pcntl_async_signals(true);
+            self::$previousAsyncSignals ??= pcntl_async_signals(true);
             if (function_exists('pcntl_signal_get_handler')) {
                 self::$previousResizeHandler = pcntl_signal_get_handler(SIGWINCH);
             }
@@ -119,6 +120,11 @@ class Terminal
 
         if (function_exists('pcntl_signal') && defined('SIGWINCH')) {
             pcntl_signal(SIGWINCH, self::$previousResizeHandler ?? SIG_DFL);
+        }
+
+        if (null !== self::$previousAsyncSignals && function_exists('pcntl_async_signals')) {
+            pcntl_async_signals(self::$previousAsyncSignals);
+            self::$previousAsyncSignals = null;
         }
 
         self::$previousResizeHandler = null;
@@ -154,8 +160,11 @@ class Terminal
 
     private static function execStty(string $command) : ?string
     {
-        /** @var resource $process */
-        $process = proc_open($command, [0 => self::getInputStream(), 1 => ['pipe', 'w'], 2 => ['null']], $pipes);
+        /** @var resource|false $process */
+        $process = @proc_open($command, [0 => self::getInputStream(), 1 => ['pipe', 'w'], 2 => ['null']], $pipes);
+        if (false === $process) {
+            return null;
+        }
         /** @var array{1: resource} $pipes */
         $output = stream_get_contents($pipes[1]);
         fclose($pipes[1]);
