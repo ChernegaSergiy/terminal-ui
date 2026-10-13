@@ -118,11 +118,7 @@ class Terminal
         }
 
         if (function_exists('pcntl_signal') && defined('SIGWINCH')) {
-            if (null !== self::$previousResizeHandler) {
-                pcntl_signal(SIGWINCH, self::$previousResizeHandler);
-            } else {
-                pcntl_signal(SIGWINCH, SIG_DFL);
-            }
+            pcntl_signal(SIGWINCH, self::$previousResizeHandler ?? SIG_DFL);
         }
 
         self::$previousResizeHandler = null;
