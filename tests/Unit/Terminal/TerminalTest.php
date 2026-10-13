@@ -552,6 +552,8 @@ final class TerminalTest extends TestCase
             Terminal::setInputStream(null);
             if (false !== $origPath) {
                 putenv("PATH={$origPath}");
+            } else {
+                putenv('PATH');
             }
         }
     }
