@@ -435,45 +435,42 @@ class Terminal
      */
     private static function initDimensions() : void
     {
-        $envCols = self::getEnvInt('COLUMNS');
-        $envLines = self::getEnvInt('LINES');
+        $cols = self::getEnvInt('COLUMNS');
+        $rows = self::getEnvInt('LINES');
 
-        if (null !== $envCols && null !== $envLines) {
-            self::$width = $envCols;
-            self::$height = $envLines;
-
-            return;
+        if (null === $cols || null === $rows) {
+            [$sysCols, $sysRows] = self::detectSystemDimensions();
+            $cols ??= $sysCols;
+            $rows ??= $sysRows;
         }
 
-        if ('Windows' !== PHP_OS_FAMILY) {
-            $stty = self::execStty('stty size');
-            if (null !== $stty && 1 === preg_match('/^(\d+)\s+(\d+)$/', trim($stty), $matches)) {
-                $rows = (int) $matches[1];
-                $cols = (int) $matches[2];
-                if ($rows > 0 && $cols > 0) {
-                    self::$width = $envCols ?? $cols;
-                    self::$height = $envLines ?? $rows;
+        self::$width = $cols ?? self::DEFAULT_WIDTH;
+        self::$height = $rows ?? self::DEFAULT_HEIGHT;
+    }
 
-                    return;
-                }
-            }
-
-            $tputCols = self::execCommand('tput cols');
-            $tputLines = self::execCommand('tput lines');
-
-            $cols = null !== $tputCols && is_numeric($tputCols) ? (int) $tputCols : null;
-            $rows = null !== $tputLines && is_numeric($tputLines) ? (int) $tputLines : null;
-
-            if ((null !== $cols && $cols > 0) || (null !== $rows && $rows > 0)) {
-                self::$width = $envCols ?? (null !== $cols && $cols > 0 ? $cols : self::DEFAULT_WIDTH);
-                self::$height = $envLines ?? (null !== $rows && $rows > 0 ? $rows : self::DEFAULT_HEIGHT);
-
-                return;
+    /**
+     * Probes terminal dimensions from stty and tput.
+     *
+     * @return array{0: ?int, 1: ?int}
+     */
+    private static function detectSystemDimensions() : array
+    {
+        $stty = self::execStty('stty size');
+        if (null !== $stty && 1 === preg_match('/^(\d+)\s+(\d+)$/', trim($stty), $matches)) {
+            $rows = (int) $matches[1];
+            $cols = (int) $matches[2];
+            if ($rows > 0 && $cols > 0) {
+                return [$cols, $rows];
             }
         }
 
-        self::$width = $envCols ?? self::DEFAULT_WIDTH;
-        self::$height = $envLines ?? self::DEFAULT_HEIGHT;
+        $tputCols = self::execCommand('tput cols');
+        $tputLines = self::execCommand('tput lines');
+
+        return [
+            null !== $tputCols && is_numeric($tputCols) && (int) $tputCols > 0 ? (int) $tputCols : null,
+            null !== $tputLines && is_numeric($tputLines) && (int) $tputLines > 0 ? (int) $tputLines : null,
+        ];
     }
 
     private static function getEnvInt(string $name) : ?int
