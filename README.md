@@ -216,6 +216,28 @@ An interactive component for a single yes/no choice. `Space` toggles the checkbo
 
 -   **Result**: `getResult(): bool` returns `true` if the checkbox is checked.
 
+### `Confirm` Class
+
+An interactive binary confirmation prompt. Users toggle or select between two choices (by default `Yes` and `No`) using arrow keys (`Left`/`Right`, `Up`/`Down`), `Tab`, `Space`, or keyboard shortcuts (`y`/`n` or the initial letter of localized labels), and confirm with `Enter`.
+
+-   **Constructor**:
+    ```php
+    public function __construct(
+        string $label,
+        bool $default = true,
+        string $yes = 'Yes',
+        string $no = 'No',
+        string $instruction = 'Use ← → / y/n to select, Enter to confirm'
+    )
+    ```
+    -   `$label` (string): The prompt/question displayed to the user.
+    -   `$default` (bool): Optional. The initial state (default: `true`).
+    -   `$yes` (string): Optional. Label for the affirmative option (default: `'Yes'`).
+    -   `$no` (string): Optional. Label for the negative option (default: `'No'`).
+    -   `$instruction` (string): Optional. The instruction message shown under the choices.
+
+-   **Result**: `getResult(): bool` returns `true` if affirmative is selected, `false` otherwise.
+
 ### `Menu` Class
 
 An interactive single-choice menu. Users move through the items with `Up`/`Down` (`Home` and `End` jump to the first and the last item), select the highlighted item with `Enter`, or cancel with `Esc`.
