@@ -530,4 +530,29 @@ final class TerminalTest extends TestCase
         $fail = $method->invoke(null, 'exit 1');
         $this->assertNull($fail);
     }
+
+    public function testDetectSystemDimensionsHelper() : void
+    {
+        $method = new ReflectionMethod(Terminal::class, 'detectSystemDimensions');
+
+        $dimensions = $method->invoke(null);
+        $this->assertIsArray($dimensions);
+        $this->assertCount(2, $dimensions);
+
+        $origPath = getenv('PATH');
+        putenv('PATH=/nonexistent');
+        [$reader, $writer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        fclose($writer);
+        Terminal::setInputStream($reader);
+
+        try {
+            $this->assertSame([null, null], $method->invoke(null));
+        } finally {
+            fclose($reader);
+            Terminal::setInputStream(null);
+            if (false !== $origPath) {
+                putenv("PATH={$origPath}");
+            }
+        }
+    }
 }
