@@ -22,6 +22,9 @@ class Terminal
     private static ?int $customHeight = null;
     private static ?int $width = null;
     private static ?int $height = null;
+    private static bool $resizeRegistered = false;
+    /** @var callable|int|null */
+    private static mixed $previousResizeHandler = null;
 
     /** How long to wait (in microseconds) for the rest of an escape sequence before reading ESC as the Esc key. */
     private const ESCAPE_TIMEOUT_US = 50000;
@@ -65,6 +68,7 @@ class Terminal
         }
         self::disableRawMode();
         self::resetDimensions();
+        self::restoreResizeHandler();
     }
 
     /**
@@ -87,16 +91,52 @@ class Terminal
             foreach ([SIGINT, SIGTERM, SIGHUP] as $signal) {
                 pcntl_signal($signal, $handler);
             }
-            if (defined('SIGWINCH')) {
-                pcntl_signal(SIGWINCH, [self::class, 'handleWindowResize']);
-            }
+            self::registerResizeHandler();
         }
     }
 
-    public static function handleWindowResize() : void
+    private static function registerResizeHandler() : void
+    {
+        if (self::$resizeRegistered) {
+            return;
+        }
+
+        if (function_exists('pcntl_signal') && function_exists('pcntl_async_signals') && defined('SIGWINCH')) {
+            pcntl_async_signals(true);
+            if (function_exists('pcntl_signal_get_handler')) {
+                self::$previousResizeHandler = pcntl_signal_get_handler(SIGWINCH);
+            }
+            pcntl_signal(SIGWINCH, [self::class, 'handleWindowResize']);
+            self::$resizeRegistered = true;
+        }
+    }
+
+    private static function restoreResizeHandler() : void
+    {
+        if (! self::$resizeRegistered) {
+            return;
+        }
+
+        if (function_exists('pcntl_signal') && defined('SIGWINCH')) {
+            if (null !== self::$previousResizeHandler) {
+                pcntl_signal(SIGWINCH, self::$previousResizeHandler);
+            } else {
+                pcntl_signal(SIGWINCH, SIG_DFL);
+            }
+        }
+
+        self::$previousResizeHandler = null;
+        self::$resizeRegistered = false;
+    }
+
+    public static function handleWindowResize(?int $signal = null) : void
     {
         self::$width = null;
         self::$height = null;
+
+        if (is_callable(self::$previousResizeHandler)) {
+            (self::$previousResizeHandler)($signal ?? (defined('SIGWINCH') ? SIGWINCH : 28));
+        }
     }
 
     public static function handleSignal(int $signal) : void
@@ -437,6 +477,8 @@ class Terminal
      */
     private static function initDimensions() : void
     {
+        self::registerResizeHandler();
+
         [$sttyCols, $sttyRows] = self::detectSttyDimensions();
 
         $cols = $sttyCols ?? self::getEnvInt('COLUMNS');
