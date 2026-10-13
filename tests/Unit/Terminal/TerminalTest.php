@@ -729,11 +729,49 @@ final class TerminalTest extends TestCase
             Terminal::resetDimensions();
             Terminal::getWidth();
             Terminal::restore();
+
+            if (function_exists('pcntl_async_signals')) {
+                pcntl_async_signals(false);
+                Terminal::resetDimensions();
+                Terminal::getWidth();
+                $this->assertTrue(pcntl_async_signals());
+                Terminal::restore();
+                $this->assertFalse(pcntl_async_signals());
+            }
         } finally {
             Terminal::restore();
             if (null !== $origHandler) {
                 pcntl_signal(SIGWINCH, $origHandler);
             }
         }
+    }
+
+    public function testExecCommandAndExecSttyWhenProcOpenFails() : void
+    {
+        $execCommand = new ReflectionMethod(Terminal::class, 'execCommand');
+        $execStty = new ReflectionMethod(Terminal::class, 'execStty');
+
+        set_error_handler(static fn() => true);
+        $files = [];
+        try {
+            while (true) {
+                $f = @fopen('/dev/null', 'r');
+                if (false === $f) {
+                    break;
+                }
+                $files[] = $f;
+            }
+
+            $cmdResult = $execCommand->invoke(null, 'echo 1');
+            $sttyResult = $execStty->invoke(null, 'stty size');
+        } finally {
+            foreach ($files as $f) {
+                fclose($f);
+            }
+            restore_error_handler();
+        }
+
+        $this->assertNull($cmdResult);
+        $this->assertNull($sttyResult);
     }
 }
