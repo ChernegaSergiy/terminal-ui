@@ -425,8 +425,13 @@ final class TerminalTest extends TestCase
 
         $origCols = getenv('COLUMNS');
         $origLines = getenv('LINES');
+        $origServerCols = $_SERVER['COLUMNS'] ?? null;
+        $origServerLines = $_SERVER['LINES'] ?? null;
+        $origEnvCols = $_ENV['COLUMNS'] ?? null;
+        $origEnvLines = $_ENV['LINES'] ?? null;
         putenv('COLUMNS');
         putenv('LINES');
+        unset($_SERVER['COLUMNS'], $_SERVER['LINES'], $_ENV['COLUMNS'], $_ENV['LINES']);
 
         try {
             $pty = $pipes[0];
@@ -442,9 +447,33 @@ final class TerminalTest extends TestCase
         } finally {
             if (false !== $origCols) {
                 putenv("COLUMNS={$origCols}");
+            } else {
+                putenv('COLUMNS');
             }
             if (false !== $origLines) {
                 putenv("LINES={$origLines}");
+            } else {
+                putenv('LINES');
+            }
+            if (null !== $origServerCols) {
+                $_SERVER['COLUMNS'] = $origServerCols;
+            } else {
+                unset($_SERVER['COLUMNS']);
+            }
+            if (null !== $origServerLines) {
+                $_SERVER['LINES'] = $origServerLines;
+            } else {
+                unset($_SERVER['LINES']);
+            }
+            if (null !== $origEnvCols) {
+                $_ENV['COLUMNS'] = $origEnvCols;
+            } else {
+                unset($_ENV['COLUMNS']);
+            }
+            if (null !== $origEnvLines) {
+                $_ENV['LINES'] = $origEnvLines;
+            } else {
+                unset($_ENV['LINES']);
             }
             proc_terminate($process);
             fclose($pipes[0]);
@@ -464,8 +493,13 @@ final class TerminalTest extends TestCase
 
         $origCols = getenv('COLUMNS');
         $origLines = getenv('LINES');
+        $origServerCols = $_SERVER['COLUMNS'] ?? null;
+        $origServerLines = $_SERVER['LINES'] ?? null;
+        $origEnvCols = $_ENV['COLUMNS'] ?? null;
+        $origEnvLines = $_ENV['LINES'] ?? null;
         putenv('COLUMNS');
         putenv('LINES');
+        unset($_SERVER['COLUMNS'], $_SERVER['LINES'], $_ENV['COLUMNS'], $_ENV['LINES']);
 
         try {
             Terminal::resetDimensions();
@@ -476,9 +510,33 @@ final class TerminalTest extends TestCase
             Terminal::setInputStream(null);
             if (false !== $origCols) {
                 putenv("COLUMNS={$origCols}");
+            } else {
+                putenv('COLUMNS');
             }
             if (false !== $origLines) {
                 putenv("LINES={$origLines}");
+            } else {
+                putenv('LINES');
+            }
+            if (null !== $origServerCols) {
+                $_SERVER['COLUMNS'] = $origServerCols;
+            } else {
+                unset($_SERVER['COLUMNS']);
+            }
+            if (null !== $origServerLines) {
+                $_SERVER['LINES'] = $origServerLines;
+            } else {
+                unset($_SERVER['LINES']);
+            }
+            if (null !== $origEnvCols) {
+                $_ENV['COLUMNS'] = $origEnvCols;
+            } else {
+                unset($_ENV['COLUMNS']);
+            }
+            if (null !== $origEnvLines) {
+                $_ENV['LINES'] = $origEnvLines;
+            } else {
+                unset($_ENV['LINES']);
             }
             Terminal::resetDimensions();
         }
@@ -493,8 +551,13 @@ final class TerminalTest extends TestCase
         $origPath = getenv('PATH');
         $origCols = getenv('COLUMNS');
         $origLines = getenv('LINES');
+        $origServerCols = $_SERVER['COLUMNS'] ?? null;
+        $origServerLines = $_SERVER['LINES'] ?? null;
+        $origEnvCols = $_ENV['COLUMNS'] ?? null;
+        $origEnvLines = $_ENV['LINES'] ?? null;
         putenv('COLUMNS');
         putenv('LINES');
+        unset($_SERVER['COLUMNS'], $_SERVER['LINES'], $_ENV['COLUMNS'], $_ENV['LINES']);
         putenv('PATH=/nonexistent');
 
         try {
@@ -509,9 +572,33 @@ final class TerminalTest extends TestCase
             }
             if (false !== $origCols) {
                 putenv("COLUMNS={$origCols}");
+            } else {
+                putenv('COLUMNS');
             }
             if (false !== $origLines) {
                 putenv("LINES={$origLines}");
+            } else {
+                putenv('LINES');
+            }
+            if (null !== $origServerCols) {
+                $_SERVER['COLUMNS'] = $origServerCols;
+            } else {
+                unset($_SERVER['COLUMNS']);
+            }
+            if (null !== $origServerLines) {
+                $_SERVER['LINES'] = $origServerLines;
+            } else {
+                unset($_SERVER['LINES']);
+            }
+            if (null !== $origEnvCols) {
+                $_ENV['COLUMNS'] = $origEnvCols;
+            } else {
+                unset($_ENV['COLUMNS']);
+            }
+            if (null !== $origEnvLines) {
+                $_ENV['LINES'] = $origEnvLines;
+            } else {
+                unset($_ENV['LINES']);
             }
             Terminal::resetDimensions();
         }
@@ -521,21 +608,36 @@ final class TerminalTest extends TestCase
     {
         $method = new ReflectionMethod(Terminal::class, 'getEnvInt');
 
-        putenv('TEST_TERM_VAL=50');
-        $this->assertSame(50, $method->invoke(null, 'TEST_TERM_VAL'));
+        $origEnvVal = getenv('TEST_TERM_VAL');
+        $origServerVal = $_SERVER['TEST_SERVER_VAL'] ?? null;
 
-        putenv('TEST_TERM_VAL=invalid');
-        $this->assertNull($method->invoke(null, 'TEST_TERM_VAL'));
+        try {
+            putenv('TEST_TERM_VAL=50');
+            $this->assertSame(50, $method->invoke(null, 'TEST_TERM_VAL'));
 
-        putenv('TEST_TERM_VAL=-10');
-        $this->assertNull($method->invoke(null, 'TEST_TERM_VAL'));
+            putenv('TEST_TERM_VAL=invalid');
+            $this->assertNull($method->invoke(null, 'TEST_TERM_VAL'));
 
-        putenv('TEST_TERM_VAL');
-        $this->assertNull($method->invoke(null, 'TEST_TERM_VAL'));
+            putenv('TEST_TERM_VAL=-10');
+            $this->assertNull($method->invoke(null, 'TEST_TERM_VAL'));
 
-        $_SERVER['TEST_SERVER_VAL'] = '75';
-        $this->assertSame(75, $method->invoke(null, 'TEST_SERVER_VAL'));
-        unset($_SERVER['TEST_SERVER_VAL']);
+            putenv('TEST_TERM_VAL');
+            $this->assertNull($method->invoke(null, 'TEST_TERM_VAL'));
+
+            $_SERVER['TEST_SERVER_VAL'] = '75';
+            $this->assertSame(75, $method->invoke(null, 'TEST_SERVER_VAL'));
+        } finally {
+            if (false !== $origEnvVal) {
+                putenv("TEST_TERM_VAL={$origEnvVal}");
+            } else {
+                putenv('TEST_TERM_VAL');
+            }
+            if (null !== $origServerVal) {
+                $_SERVER['TEST_SERVER_VAL'] = $origServerVal;
+            } else {
+                unset($_SERVER['TEST_SERVER_VAL']);
+            }
+        }
     }
 
     public function testExecCommandHelper() : void
@@ -592,5 +694,46 @@ final class TerminalTest extends TestCase
 
         $this->assertNull($ref->getProperty('width')->getValue());
         $this->assertNull($ref->getProperty('height')->getValue());
+    }
+
+    public function testRegisterResizeHandlerPreservesAndRestoresPreviousHandler() : void
+    {
+        if (! function_exists('pcntl_signal') || ! defined('SIGWINCH')) {
+            $this->markTestSkipped('pcntl signal is not available');
+        }
+
+        $origHandler = function_exists('pcntl_signal_get_handler') ? pcntl_signal_get_handler(SIGWINCH) : null;
+        $called = false;
+        $customHandler = static function (int $sig) use (&$called) : void {
+            $called = true;
+        };
+
+        try {
+            pcntl_signal(SIGWINCH, $customHandler);
+            Terminal::resetDimensions();
+            Terminal::getWidth();
+
+            $registerMethod = new ReflectionMethod(Terminal::class, 'registerResizeHandler');
+            $registerMethod->invoke(null);
+
+            Terminal::handleWindowResize();
+            $this->assertTrue($called);
+
+            Terminal::restore();
+
+            if (function_exists('pcntl_signal_get_handler')) {
+                $this->assertSame($customHandler, pcntl_signal_get_handler(SIGWINCH));
+            }
+
+            pcntl_signal(SIGWINCH, SIG_DFL);
+            Terminal::resetDimensions();
+            Terminal::getWidth();
+            Terminal::restore();
+        } finally {
+            Terminal::restore();
+            if (null !== $origHandler) {
+                pcntl_signal(SIGWINCH, $origHandler);
+            }
+        }
     }
 }
