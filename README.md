@@ -453,6 +453,14 @@ The repository includes a dedicated [`examples/`](examples) directory with inter
 
   ![Setup Wizard Demo](docs/demo/wizard.gif)
 
+- **Confirmation Prompt ([`examples/confirm.php`](examples/confirm.php))**:
+  Demonstrates binary confirmation prompts with horizontal selection, arrow key navigation, keyboard shortcuts, and custom option labels:
+  ```bash
+  php examples/confirm.php
+  ```
+
+  ![Confirmation Prompt Demo](docs/demo/confirm.gif)
+
 ## Contributing
 
 Contributions are welcome and appreciated! Here's how you can contribute:
