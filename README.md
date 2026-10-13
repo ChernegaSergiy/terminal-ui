@@ -22,6 +22,7 @@ This library provides a set of interactive components for building terminal-base
 - **Headless & Pipeline Safe**: Intelligently inspects stream interactivity (`stream_isatty`) and executes `stty` on active input streams, running safely in non-interactive pipelines and CI.
 - **UTF-8 & Non-Blocking Input**: Reads raw terminal input byte-by-byte via `stream_select()`, correctly assembling multi-byte UTF-8 sequences (Cyrillic, emoji) and ANSI escape codes.
 - **Built-in ANSI Styling**: Lightweight `Ansi` helper providing standard colors, bright variants, backgrounds, and text formatting attributes without external dependencies.
+- **Terminal Dimension Detection**: Dynamically inspects terminal width and height via environment variables, `stty size`, and `tput`, automatically refreshing on window resize via `SIGWINCH`.
 - **Zero Runtime Dependencies**: Pure PHP 8.1+ library using native streams and ANSI escape sequences.
 
 ## Installation
