@@ -163,6 +163,19 @@ final class ConfirmTest extends TestCase
         $this->assertFalse($confirm->getResult());
     }
 
+    public function testExplicitYAndNTakePrecedenceOverCustomInitials() : void
+    {
+        $confirm = new Confirm('Proceed to next?', default: true, yes: 'Next', no: 'Back');
+
+        // 'n' must select false, not match 'Next' ($firstYes)
+        $confirm->handleKey('n');
+        $this->assertFalse($confirm->getResult());
+
+        // 'y' selects true
+        $confirm->handleKey('y');
+        $this->assertTrue($confirm->getResult());
+    }
+
     public function testEnterKeyConfirms() : void
     {
         $confirm = new Confirm('Are you sure?');
