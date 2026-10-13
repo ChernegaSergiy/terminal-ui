@@ -7,6 +7,7 @@ require_once __DIR__ . '/bootstrap.php';
 use ChernegaSergiy\TerminalUi\Component\Checkbox;
 use ChernegaSergiy\TerminalUi\Component\Form;
 use ChernegaSergiy\TerminalUi\Component\PasswordInput;
+use ChernegaSergiy\TerminalUi\Component\Textarea;
 use ChernegaSergiy\TerminalUi\Component\TextInput;
 use ChernegaSergiy\TerminalUi\Runner;
 use ChernegaSergiy\TerminalUi\Terminal\SignalException;
@@ -33,6 +34,7 @@ try {
     $loginForm = new Form('Login', [
         'email' => new TextInput('Email', placeholder: 'user@example.com', validator: $emailValidator),
         'password' => new PasswordInput('Password', placeholder: 'Enter password', validator: $passwordValidator),
+        'note' => new Textarea('Session notes', placeholder: 'Optional notes for this session...', rows: 3, cols: 50),
         'remember' => new Checkbox('Remember session', true),
     ]);
 
@@ -46,6 +48,7 @@ try {
     echo "\nResult:\n";
     echo "  email:    " . (string) $results['email'] . "\n";
     echo "  password: " . str_repeat('*', mb_strlen((string) $results['password'])) . "\n";
+    echo "  note:     " . (string) $results['note'] . "\n";
     echo "  remember: " . ($results['remember'] ? 'yes' : 'no') . "\n";
 } catch (SignalException $e) {
     echo "\n";
