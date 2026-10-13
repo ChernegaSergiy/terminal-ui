@@ -345,6 +345,19 @@ The runner draws every frame in the terminal's alternative screen, so the output
 
 **Requirements**: an interactive POSIX terminal with `stty` available. Windows and non-interactive input (pipes, redirected STDIN) are not supported and raise a `RuntimeException`. The optional `pcntl` extension lets the terminal be restored on `SIGINT`/`SIGTERM`/`SIGHUP`.
 
+### `Terminal` Class
+
+`ChernegaSergiy\TerminalUi\Terminal\Terminal` encapsulates low-level terminal I/O, raw mode management, alternate screen buffering, cursor visibility, and terminal geometry detection.
+
+- **Window Dimensions**:
+  - `getWidth(): int`: Returns the terminal width in columns (defaults to `80`).
+  - `getHeight(): int`: Returns the terminal height in rows (defaults to `24`).
+  - `getDimensions(): array{0: int, 1: int}`: Returns an array containing `[width, height]`.
+  - `setDimensions(?int $width = null, ?int $height = null): void`: Manually overrides dimensions (useful in tests or headless runners). Pass `null` to restore auto-detection.
+  - `resetDimensions(): void`: Resets both custom overrides and cached dimensions.
+- **Detection Strategy**: Probes `COLUMNS` and `LINES` environment variables, falls back to `stty size` over active input streams, then `tput cols` / `tput lines`, and finally defaults to `80x24`.
+- **Dynamic Resize Handling**: When the `pcntl` extension is available, traps `SIGWINCH` signals to automatically invalidate cached dimensions whenever the user resizes the window.
+
 ### `SignalException` Class
 
 `ChernegaSergiy\TerminalUi\Terminal\SignalException` extends `RuntimeException`. It is thrown when the process receives `SIGINT`, `SIGTERM` or `SIGHUP` while a component is running (this requires the optional `pcntl` extension). The terminal is already restored when the exception reaches your code.
