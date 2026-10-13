@@ -48,6 +48,9 @@ final class TextareaTest extends TestCase
         $this->assertSame('Hello', $textarea->getResult());
         $this->assertSame(5, $textarea->getCursorPosition());
         $this->assertSame([0, 5], $textarea->getCursorRowAndCol());
+        $this->assertSame(1, $textarea->getLineCount());
+        $multiline = new Textarea('Your bio:', "Line 1\nLine 2\nLine 3");
+        $this->assertSame(3, $multiline->getLineCount());
         $this->assertSame(4, $textarea->getRows());
         $this->assertSame(30, $textarea->getCols());
         $this->assertNull($textarea->getErrorMessage());
