@@ -210,6 +210,11 @@ class Textarea extends AbstractComponent
         return [$row, $col];
     }
 
+    public function getLineCount() : int
+    {
+        return count(explode("\n", $this->value));
+    }
+
     public function isValid() : bool
     {
         return null === $this->validate();
