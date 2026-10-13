@@ -557,4 +557,16 @@ final class TerminalTest extends TestCase
             }
         }
     }
+
+    public function testSetInputStreamInvalidatesDimensionCache() : void
+    {
+        $ref = new ReflectionClass(Terminal::class);
+        $ref->getProperty('width')->setValue(null, 130);
+        $ref->getProperty('height')->setValue(null, 45);
+
+        Terminal::setInputStream(null);
+
+        $this->assertNull($ref->getProperty('width')->getValue());
+        $this->assertNull($ref->getProperty('height')->getValue());
+    }
 }

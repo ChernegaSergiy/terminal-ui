@@ -260,6 +260,8 @@ class Terminal
     public static function setInputStream($stream) : void
     {
         self::$inputStream = $stream;
+        self::$width = null;
+        self::$height = null;
     }
 
     /**
