@@ -9,12 +9,23 @@ namespace ChernegaSergiy\TerminalUi\Terminal;
  */
 class Terminal
 {
+    public const DEFAULT_WIDTH = 80;
+    public const DEFAULT_HEIGHT = 24;
+
     private static ?string $stty_settings = null;
     private static bool $cursorHidden = false;
     private static bool $alternativeScreen = false;
     private static bool $restoreRegistered = false;
     /** @var resource|null */
     private static $inputStream = null;
+    private static ?int $customWidth = null;
+    private static ?int $customHeight = null;
+    private static ?int $width = null;
+    private static ?int $height = null;
+    private static bool $resizeRegistered = false;
+    /** @var callable|int|null */
+    private static mixed $previousResizeHandler = null;
+    private static ?bool $previousAsyncSignals = null;
 
     /** How long to wait (in microseconds) for the rest of an escape sequence before reading ESC as the Esc key. */
     private const ESCAPE_TIMEOUT_US = 50000;
@@ -57,6 +68,8 @@ class Terminal
             self::showCursor();
         }
         self::disableRawMode();
+        self::resetDimensions();
+        self::restoreResizeHandler();
     }
 
     /**
@@ -74,11 +87,57 @@ class Terminal
         register_shutdown_function([self::class, 'restore']);
 
         if (function_exists('pcntl_signal') && function_exists('pcntl_async_signals')) {
-            pcntl_async_signals(true);
+            self::$previousAsyncSignals ??= pcntl_async_signals(true);
             $handler = [self::class, 'handleSignal'];
             foreach ([SIGINT, SIGTERM, SIGHUP] as $signal) {
                 pcntl_signal($signal, $handler);
             }
+            self::registerResizeHandler();
+        }
+    }
+
+    private static function registerResizeHandler() : void
+    {
+        if (self::$resizeRegistered) {
+            return;
+        }
+
+        if (function_exists('pcntl_signal') && function_exists('pcntl_async_signals') && defined('SIGWINCH')) {
+            self::$previousAsyncSignals ??= pcntl_async_signals(true);
+            if (function_exists('pcntl_signal_get_handler')) {
+                self::$previousResizeHandler = pcntl_signal_get_handler(SIGWINCH);
+            }
+            pcntl_signal(SIGWINCH, [self::class, 'handleWindowResize']);
+            self::$resizeRegistered = true;
+        }
+    }
+
+    private static function restoreResizeHandler() : void
+    {
+        if (! self::$resizeRegistered) {
+            return;
+        }
+
+        if (function_exists('pcntl_signal') && defined('SIGWINCH')) {
+            pcntl_signal(SIGWINCH, self::$previousResizeHandler ?? SIG_DFL);
+        }
+
+        if (null !== self::$previousAsyncSignals && function_exists('pcntl_async_signals')) {
+            pcntl_async_signals(self::$previousAsyncSignals);
+            self::$previousAsyncSignals = null;
+        }
+
+        self::$previousResizeHandler = null;
+        self::$resizeRegistered = false;
+    }
+
+    public static function handleWindowResize(?int $signal = null) : void
+    {
+        self::$width = null;
+        self::$height = null;
+
+        if (is_callable(self::$previousResizeHandler)) {
+            (self::$previousResizeHandler)($signal ?? (defined('SIGWINCH') ? SIGWINCH : 28));
         }
     }
 
@@ -101,8 +160,11 @@ class Terminal
 
     private static function execStty(string $command) : ?string
     {
-        /** @var resource $process */
-        $process = proc_open($command, [0 => self::getInputStream(), 1 => ['pipe', 'w'], 2 => ['null']], $pipes);
+        /** @var resource|false $process */
+        $process = @proc_open($command, [0 => self::getInputStream(), 1 => ['pipe', 'w'], 2 => ['null']], $pipes);
+        if (false === $process) {
+            return null;
+        }
         /** @var array{1: resource} $pipes */
         $output = stream_get_contents($pipes[1]);
         fclose($pipes[1]);
@@ -243,6 +305,8 @@ class Terminal
     public static function setInputStream($stream) : void
     {
         self::$inputStream = $stream;
+        self::$width = null;
+        self::$height = null;
     }
 
     /**
@@ -347,5 +411,155 @@ class Terminal
     {
         echo "\033[?1049l";
         self::$alternativeScreen = false;
+    }
+
+    /**
+     * Returns the terminal width in columns.
+     */
+    public static function getWidth() : int
+    {
+        if (null !== self::$customWidth) {
+            return self::$customWidth;
+        }
+
+        if (null === self::$width) {
+            self::initDimensions();
+        }
+
+        return self::$width ?? self::DEFAULT_WIDTH;
+    }
+
+    /**
+     * Returns the terminal height in rows.
+     */
+    public static function getHeight() : int
+    {
+        if (null !== self::$customHeight) {
+            return self::$customHeight;
+        }
+
+        if (null === self::$height) {
+            self::initDimensions();
+        }
+
+        return self::$height ?? self::DEFAULT_HEIGHT;
+    }
+
+    /**
+     * Returns the terminal dimensions as [width, height].
+     *
+     * @return array{0: int, 1: int}
+     */
+    public static function getDimensions() : array
+    {
+        return [self::getWidth(), self::getHeight()];
+    }
+
+    /**
+     * Sets custom terminal dimensions, overriding automatic detection.
+     * Pass null to restore automatic detection.
+     */
+    public static function setDimensions(?int $width = null, ?int $height = null) : void
+    {
+        self::$customWidth = null !== $width && $width > 0 ? $width : null;
+        self::$customHeight = null !== $height && $height > 0 ? $height : null;
+    }
+
+    /**
+     * Resets cached and custom terminal dimensions.
+     */
+    public static function resetDimensions() : void
+    {
+        self::$customWidth = null;
+        self::$customHeight = null;
+        self::$width = null;
+        self::$height = null;
+    }
+
+    /**
+     * Initializes cached terminal dimensions by probing the live terminal,
+     * environment variables, tput, and defaults.
+     */
+    private static function initDimensions() : void
+    {
+        self::registerResizeHandler();
+
+        [$sttyCols, $sttyRows] = self::detectSttyDimensions();
+
+        $cols = $sttyCols ?? self::getEnvInt('COLUMNS');
+        $rows = $sttyRows ?? self::getEnvInt('LINES');
+
+        if (null === $cols || null === $rows) {
+            [$tputCols, $tputRows] = self::detectTputDimensions();
+            $cols ??= $tputCols;
+            $rows ??= $tputRows;
+        }
+
+        self::$width = $cols ?? self::DEFAULT_WIDTH;
+        self::$height = $rows ?? self::DEFAULT_HEIGHT;
+    }
+
+    /**
+     * Probes terminal dimensions from stty on the active input stream.
+     *
+     * @return array{0: ?int, 1: ?int}
+     */
+    private static function detectSttyDimensions() : array
+    {
+        $stty = self::execStty('stty size');
+        if (null !== $stty && 1 === preg_match('/^(\d+)\s+(\d+)$/', trim($stty), $matches)) {
+            $rows = (int) $matches[1];
+            $cols = (int) $matches[2];
+            if ($rows > 0 && $cols > 0) {
+                return [$cols, $rows];
+            }
+        }
+
+        return [null, null];
+    }
+
+    /**
+     * Probes terminal dimensions from terminfo database via tput.
+     *
+     * @return array{0: ?int, 1: ?int}
+     */
+    private static function detectTputDimensions() : array
+    {
+        $tputCols = self::execCommand('tput cols');
+        $tputLines = self::execCommand('tput lines');
+
+        return [
+            null !== $tputCols && is_numeric($tputCols) && (int) $tputCols > 0 ? (int) $tputCols : null,
+            null !== $tputLines && is_numeric($tputLines) && (int) $tputLines > 0 ? (int) $tputLines : null,
+        ];
+    }
+
+    private static function getEnvInt(string $name) : ?int
+    {
+        $val = getenv($name);
+        if (false === $val || '' === $val) {
+            $val = $_SERVER[$name] ?? $_ENV[$name] ?? null;
+        }
+
+        if (null !== $val && is_numeric($val) && (int) $val > 0) {
+            return (int) $val;
+        }
+
+        return null;
+    }
+
+    private static function execCommand(string $command) : ?string
+    {
+        /** @var resource|false $process */
+        $process = @proc_open($command, [0 => ['null'], 1 => ['pipe', 'w'], 2 => ['null']], $pipes);
+        if (false === $process) {
+            return null;
+        }
+        /** @var array{1: resource} $pipes */
+        $output = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+        $status = proc_close($process);
+
+        return 0 === $status && false !== $output ? trim($output) : null;
     }
 }

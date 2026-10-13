@@ -22,6 +22,7 @@ This library provides a set of interactive components for building terminal-base
 - **Headless & Pipeline Safe**: Intelligently inspects stream interactivity (`stream_isatty`) and executes `stty` on active input streams, running safely in non-interactive pipelines and CI.
 - **UTF-8 & Non-Blocking Input**: Reads raw terminal input byte-by-byte via `stream_select()`, correctly assembling multi-byte UTF-8 sequences (Cyrillic, emoji) and ANSI escape codes.
 - **Built-in ANSI Styling**: Lightweight `Ansi` helper providing standard colors, bright variants, backgrounds, and text formatting attributes without external dependencies.
+- **Terminal Dimension Detection**: Dynamically inspects terminal width and height via environment variables, `stty size`, and `tput`, automatically refreshing on window resize via `SIGWINCH`.
 - **Zero Runtime Dependencies**: Pure PHP 8.1+ library using native streams and ANSI escape sequences.
 
 ## Installation
@@ -343,6 +344,19 @@ This utility class provides a static method to run any `Component` (including a 
 The runner draws every frame in the terminal's alternative screen, so the output printed before it started is left untouched, and it restores the terminal (input mode, cursor, screen) when it finishes, fails, or the process is interrupted.
 
 **Requirements**: an interactive POSIX terminal with `stty` available. Windows and non-interactive input (pipes, redirected STDIN) are not supported and raise a `RuntimeException`. The optional `pcntl` extension lets the terminal be restored on `SIGINT`/`SIGTERM`/`SIGHUP`.
+
+### `Terminal` Class
+
+`ChernegaSergiy\TerminalUi\Terminal\Terminal` encapsulates low-level terminal I/O, raw mode management, alternate screen buffering, cursor visibility, and terminal geometry detection.
+
+- **Window Dimensions**:
+  - `getWidth(): int`: Returns the terminal width in columns (defaults to `80`).
+  - `getHeight(): int`: Returns the terminal height in rows (defaults to `24`).
+  - `getDimensions(): array{0: int, 1: int}`: Returns an array containing `[width, height]`.
+  - `setDimensions(?int $width = null, ?int $height = null): void`: Manually overrides dimensions (useful in tests or headless runners). Pass `null` to restore auto-detection.
+  - `resetDimensions(): void`: Resets both custom overrides and cached dimensions.
+- **Detection Strategy**: Probes `COLUMNS` and `LINES` environment variables, falls back to `stty size` over active input streams, then `tput cols` / `tput lines`, and finally defaults to `80x24`.
+- **Dynamic Resize Handling**: When the `pcntl` extension is available, traps `SIGWINCH` signals to automatically invalidate cached dimensions whenever the user resizes the window.
 
 ### `SignalException` Class
 
