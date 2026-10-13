@@ -9,12 +9,19 @@ namespace ChernegaSergiy\TerminalUi\Terminal;
  */
 class Terminal
 {
+    public const DEFAULT_WIDTH = 80;
+    public const DEFAULT_HEIGHT = 24;
+
     private static ?string $stty_settings = null;
     private static bool $cursorHidden = false;
     private static bool $alternativeScreen = false;
     private static bool $restoreRegistered = false;
     /** @var resource|null */
     private static $inputStream = null;
+    private static ?int $customWidth = null;
+    private static ?int $customHeight = null;
+    private static ?int $width = null;
+    private static ?int $height = null;
 
     /** How long to wait (in microseconds) for the rest of an escape sequence before reading ESC as the Esc key. */
     private const ESCAPE_TIMEOUT_US = 50000;
@@ -57,6 +64,7 @@ class Terminal
             self::showCursor();
         }
         self::disableRawMode();
+        self::resetDimensions();
     }
 
     /**
@@ -79,7 +87,16 @@ class Terminal
             foreach ([SIGINT, SIGTERM, SIGHUP] as $signal) {
                 pcntl_signal($signal, $handler);
             }
+            if (defined('SIGWINCH')) {
+                pcntl_signal(SIGWINCH, [self::class, 'handleWindowResize']);
+            }
         }
+    }
+
+    public static function handleWindowResize() : void
+    {
+        self::$width = null;
+        self::$height = null;
     }
 
     public static function handleSignal(int $signal) : void
@@ -347,5 +364,145 @@ class Terminal
     {
         echo "\033[?1049l";
         self::$alternativeScreen = false;
+    }
+
+    /**
+     * Returns the terminal width in columns.
+     */
+    public static function getWidth() : int
+    {
+        if (null !== self::$customWidth) {
+            return self::$customWidth;
+        }
+
+        if (null === self::$width) {
+            self::initDimensions();
+        }
+
+        return self::$width ?? self::DEFAULT_WIDTH;
+    }
+
+    /**
+     * Returns the terminal height in rows.
+     */
+    public static function getHeight() : int
+    {
+        if (null !== self::$customHeight) {
+            return self::$customHeight;
+        }
+
+        if (null === self::$height) {
+            self::initDimensions();
+        }
+
+        return self::$height ?? self::DEFAULT_HEIGHT;
+    }
+
+    /**
+     * Returns the terminal dimensions as [width, height].
+     *
+     * @return array{0: int, 1: int}
+     */
+    public static function getDimensions() : array
+    {
+        return [self::getWidth(), self::getHeight()];
+    }
+
+    /**
+     * Sets custom terminal dimensions, overriding automatic detection.
+     * Pass null to restore automatic detection.
+     */
+    public static function setDimensions(?int $width = null, ?int $height = null) : void
+    {
+        self::$customWidth = null !== $width && $width > 0 ? $width : null;
+        self::$customHeight = null !== $height && $height > 0 ? $height : null;
+    }
+
+    /**
+     * Resets cached and custom terminal dimensions.
+     */
+    public static function resetDimensions() : void
+    {
+        self::$customWidth = null;
+        self::$customHeight = null;
+        self::$width = null;
+        self::$height = null;
+    }
+
+    /**
+     * Initializes cached terminal dimensions by probing environment variables,
+     * stty, and tput.
+     */
+    private static function initDimensions() : void
+    {
+        $envCols = self::getEnvInt('COLUMNS');
+        $envLines = self::getEnvInt('LINES');
+
+        if (null !== $envCols && null !== $envLines) {
+            self::$width = $envCols;
+            self::$height = $envLines;
+
+            return;
+        }
+
+        if ('Windows' !== PHP_OS_FAMILY) {
+            $stty = self::execStty('stty size');
+            if (null !== $stty && 1 === preg_match('/^(\d+)\s+(\d+)$/', trim($stty), $matches)) {
+                $rows = (int) $matches[1];
+                $cols = (int) $matches[2];
+                if ($rows > 0 && $cols > 0) {
+                    self::$width = $envCols ?? $cols;
+                    self::$height = $envLines ?? $rows;
+
+                    return;
+                }
+            }
+
+            $tputCols = self::execCommand('tput cols');
+            $tputLines = self::execCommand('tput lines');
+
+            $cols = null !== $tputCols && is_numeric($tputCols) ? (int) $tputCols : null;
+            $rows = null !== $tputLines && is_numeric($tputLines) ? (int) $tputLines : null;
+
+            if ((null !== $cols && $cols > 0) || (null !== $rows && $rows > 0)) {
+                self::$width = $envCols ?? (null !== $cols && $cols > 0 ? $cols : self::DEFAULT_WIDTH);
+                self::$height = $envLines ?? (null !== $rows && $rows > 0 ? $rows : self::DEFAULT_HEIGHT);
+
+                return;
+            }
+        }
+
+        self::$width = $envCols ?? self::DEFAULT_WIDTH;
+        self::$height = $envLines ?? self::DEFAULT_HEIGHT;
+    }
+
+    private static function getEnvInt(string $name) : ?int
+    {
+        $val = getenv($name);
+        if (false === $val || '' === $val) {
+            $val = $_SERVER[$name] ?? $_ENV[$name] ?? null;
+        }
+
+        if (null !== $val && is_numeric($val) && (int) $val > 0) {
+            return (int) $val;
+        }
+
+        return null;
+    }
+
+    private static function execCommand(string $command) : ?string
+    {
+        /** @var resource|false $process */
+        $process = @proc_open($command, [0 => ['null'], 1 => ['pipe', 'w'], 2 => ['null']], $pipes);
+        if (! is_resource($process)) {
+            return null;
+        }
+
+        /** @var array{1: resource} $pipes */
+        $output = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+        $status = proc_close($process);
+
+        return 0 === $status && false !== $output ? trim($output) : null;
     }
 }
