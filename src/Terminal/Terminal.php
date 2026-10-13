@@ -489,8 +489,8 @@ class Terminal
 
     private static function execCommand(string $command) : ?string
     {
-        /** @var resource $process */
-        $process = proc_open($command, [0 => ['null'], 1 => ['pipe', 'w'], 2 => ['null']], $pipes);
+        /** @var resource|false $process */
+        $process = @proc_open($command, [0 => ['null'], 1 => ['pipe', 'w'], 2 => ['null']], $pipes);
         if (false === $process) {
             return null;
         }
