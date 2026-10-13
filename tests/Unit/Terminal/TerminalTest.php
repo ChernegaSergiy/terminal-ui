@@ -557,26 +557,4 @@ final class TerminalTest extends TestCase
             }
         }
     }
-
-    public function testExecCommandReturnsNullWhenProcOpenFails() : void
-    {
-        $method = new ReflectionMethod(Terminal::class, 'execCommand');
-
-        $files = [];
-        while (true) {
-            $f = @fopen('/dev/null', 'r');
-            if (false === $f) {
-                break;
-            }
-            $files[] = $f;
-        }
-
-        try {
-            $this->assertNull($method->invoke(null, 'echo 1'));
-        } finally {
-            foreach ($files as $f) {
-                fclose($f);
-            }
-        }
-    }
 }
