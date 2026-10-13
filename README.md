@@ -199,6 +199,36 @@ An interactive component for secret/password input. Inherits full cursor navigat
     -   `$maxLength` (int|null): Optional. Maximum allowed character length.
     -   `$mask` (string): Masking character (default: `'*'`). Pass an empty string `''` to hide typed characters completely (silent input).
 
+### `Textarea` Class
+
+An interactive multi-line text input component for capturing larger blocks of text (descriptions, notes, messages). It features a bordered viewport box with automatic vertical scrolling indicators, 2D cursor navigation across lines (`Up`/`Down`, `Left`/`Right`, `Home`/`End`, `PageUp`/`PageDown`), line insertion on `Enter`, multi-byte UTF-8 support, optional placeholder, maximum length constraint with a live counter, and external validation via `ValidatorInterface`.
+
+Submission is performed by pressing `Esc` (or `Ctrl+D`).
+
+-   **Constructor**:
+    ```php
+    public function __construct(
+        string $prompt,
+        string $default = '',
+        ?ValidatorInterface $validator = null,
+        ?string $placeholder = null,
+        ?int $maxLength = null,
+        int $rows = 5,
+        int $cols = 50,
+        string $instruction = 'Enter for new line, Esc to submit'
+    )
+    ```
+    -   `$prompt` (string): The message displayed to the user asking for input.
+    -   `$default` (string): Optional. Initial text value (default: `''`).
+    -   `$validator` (ValidatorInterface|null): Optional. Validator instance to check input validity.
+    -   `$placeholder` (string|null): Optional. Placeholder text shown when input is empty.
+    -   `$maxLength` (int|null): Optional. Maximum allowed character length.
+    -   `$rows` (int): Optional. Number of visible text rows inside the box (default: `5`).
+    -   `$cols` (int): Optional. Inner width of visible text rows (default: `50`).
+    -   `$instruction` (string): Optional. Instruction hint displayed below the textarea (default: `'Enter for new line, Esc to submit'`).
+
+-   **Result**: `getResult(): string` returns the entered multi-line text.
+
 ### `Checkbox` Class
 
 An interactive component for a single yes/no choice. `Space` toggles the checkbox and `Enter` confirms it.
