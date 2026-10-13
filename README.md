@@ -15,7 +15,7 @@ This library provides a set of interactive components for building terminal-base
 
 ## Features
 
-- **Interactive Component Library**: Ready-to-use CLI widgets including text and password inputs, numbers, sliders, checkboxes, single-choice menus, multi-select lists, and searchable dropdowns.
+- **Interactive Component Library**: Ready-to-use CLI widgets including text and password inputs, numbers, sliders, checkboxes, confirmations, single-choice menus, multi-select lists, and searchable dropdowns.
 - **Composite Form Engine**: Multi-field form orchestration with `Tab` / `Shift+Tab` keyboard navigation, validation rules, and automatic focus redirection on invalid submission.
 - **Alternative Screen Buffer**: Automatically switches to the terminal's alternative screen and hides the cursor, seamlessly restoring the original screen state upon exit.
 - **POSIX Signal Handling**: Traps `SIGINT`, `SIGTERM`, and `SIGHUP` via `SignalException`, ensuring clean terminal state restoration before process termination.
@@ -215,6 +215,28 @@ An interactive component for a single yes/no choice. `Space` toggles the checkbo
     -   `$instruction` (string): Optional. The instruction message shown under the checkbox.
 
 -   **Result**: `getResult(): bool` returns `true` if the checkbox is checked.
+
+### `Confirm` Class
+
+An interactive binary confirmation prompt. Users toggle or select between two choices (by default `Yes` and `No`) using arrow keys (`Left`/`Right`, `Up`/`Down`), `Tab`, `Space`, or keyboard shortcuts (`y`/`n` or the initial letter of localized labels), and confirm with `Enter`.
+
+-   **Constructor**:
+    ```php
+    public function __construct(
+        string $label,
+        bool $default = true,
+        string $yes = 'Yes',
+        string $no = 'No',
+        string $instruction = 'Use ← → / y/n to select, Enter to confirm'
+    )
+    ```
+    -   `$label` (string): The prompt/question displayed to the user.
+    -   `$default` (bool): Optional. The initial state (default: `true`).
+    -   `$yes` (string): Optional. Label for the affirmative option (default: `'Yes'`).
+    -   `$no` (string): Optional. Label for the negative option (default: `'No'`).
+    -   `$instruction` (string): Optional. The instruction message shown under the choices.
+
+-   **Result**: `getResult(): bool` returns `true` if affirmative is selected, `false` otherwise.
 
 ### `Menu` Class
 
@@ -430,6 +452,14 @@ The repository includes a dedicated [`examples/`](examples) directory with inter
   ```
 
   ![Setup Wizard Demo](docs/demo/wizard.gif)
+
+- **Confirmation Prompt ([`examples/confirm.php`](examples/confirm.php))**:
+  Demonstrates binary confirmation prompts with horizontal selection, arrow key navigation, keyboard shortcuts, and custom option labels:
+  ```bash
+  php examples/confirm.php
+  ```
+
+  ![Confirmation Prompt Demo](docs/demo/confirm.gif)
 
 ## Contributing
 
