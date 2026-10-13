@@ -15,7 +15,7 @@ This library provides a set of interactive components for building terminal-base
 
 ## Features
 
-- **Interactive Component Library**: Ready-to-use CLI widgets including text and password inputs, numbers, sliders, checkboxes, single-choice menus, multi-select lists, and searchable dropdowns.
+- **Interactive Component Library**: Ready-to-use CLI widgets including text and password inputs, numbers, sliders, checkboxes, confirmations, single-choice menus, multi-select lists, and searchable dropdowns.
 - **Composite Form Engine**: Multi-field form orchestration with `Tab` / `Shift+Tab` keyboard navigation, validation rules, and automatic focus redirection on invalid submission.
 - **Alternative Screen Buffer**: Automatically switches to the terminal's alternative screen and hides the cursor, seamlessly restoring the original screen state upon exit.
 - **POSIX Signal Handling**: Traps `SIGINT`, `SIGTERM`, and `SIGHUP` via `SignalException`, ensuring clean terminal state restoration before process termination.
