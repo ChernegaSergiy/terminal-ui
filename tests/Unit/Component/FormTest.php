@@ -8,6 +8,7 @@ use ChernegaSergiy\TerminalUi\Component\Checkbox;
 use ChernegaSergiy\TerminalUi\Component\Form;
 use ChernegaSergiy\TerminalUi\Component\NumberInput;
 use ChernegaSergiy\TerminalUi\Component\TextInput;
+use ChernegaSergiy\TerminalUi\Component\Textarea;
 use ChernegaSergiy\TerminalUi\Terminal\Ansi;
 use ChernegaSergiy\TerminalUi\Terminal\Key;
 use ChernegaSergiy\TerminalUi\Validator\CallbackValidator;
@@ -153,4 +154,121 @@ final class FormTest extends TestCase
         // Focus was returned to the first invalid field (age)
         $this->assertStringContainsString('▶ Age:', $rendered);
     }
+
+    public function testTextareaNavigationWithinAndAcrossFields() : void
+    {
+        $form = new Form('Bio Form', [
+            'first' => new TextInput('First:'),
+            'area' => new Textarea('Area:', default: "Line 1\nLine 2"),
+            'last' => new TextInput('Last:'),
+        ]);
+
+        $this->assertStringContainsString('▶ First:', $form->render());
+
+        // Move to Textarea (focus index 1)
+        $form->handleKey(Key::Tab);
+        $this->assertStringContainsString('▶ Area:', $form->render());
+
+        // Initial cursor in area is on row 1 (last row) because default was passed.
+        // Up arrow moves up inside Textarea without changing Form focus.
+        $form->handleKey(Key::Up);
+        $this->assertStringContainsString('▶ Area:', $form->render());
+
+        // Now cursor is at row 0 (top line). Up arrow moves to previous component (First).
+        $form->handleKey(Key::Up);
+        $this->assertStringContainsString('▶ First:', $form->render());
+
+        // Down arrow from First moves focus to Area (cursor still at row 0)
+        $form->handleKey(Key::Down);
+        $this->assertStringContainsString('▶ Area:', $form->render());
+
+        // Down arrow inside Textarea moves cursor to row 1 without changing Form focus
+        $form->handleKey(Key::Down);
+        $this->assertStringContainsString('▶ Area:', $form->render());
+
+        // Down arrow at bottom line (row 1 >= lineCount - 1) moves focus to Last
+        $form->handleKey(Key::Down);
+        $this->assertStringContainsString('▶ Last:', $form->render());
+
+        // Tab moves to First, then Tab moves to Area
+        $form->handleKey(Key::Tab);
+        $this->assertStringContainsString('▶ First:', $form->render());
+        $form->handleKey(Key::Tab);
+        $this->assertStringContainsString('▶ Area:', $form->render());
+
+        // Tab from Textarea moves focus to Last
+        $form->handleKey(Key::Tab);
+        $this->assertStringContainsString('▶ Last:', $form->render());
+    }
+
+    public function testTextareaKeyInputAndEnterInForm() : void
+    {
+        $form = new Form('Notes Form', [
+            'notes' => new Textarea('Notes:'),
+        ]);
+
+        $form->handleKey('A');
+        $form->handleKey(Key::Enter);
+        $form->handleKey('B');
+
+        $this->assertFalse($form->isDone());
+        $this->assertSame(['notes' => "A\nB"], $form->getResult());
+    }
+
+    public function testTextareaEscCompletionMovesToNextFieldWhenNotLast() : void
+    {
+        $form = new Form('Multi Form', [
+            'notes' => new Textarea('Notes:', default: 'Intro'),
+            'name' => new TextInput('Name:'),
+        ]);
+
+        $this->assertStringContainsString('▶ Notes:', $form->render());
+
+        // Esc on Textarea completes it and moves to next field
+        $form->handleKey(Key::Esc);
+        $this->assertFalse($form->isDone());
+        $this->assertStringContainsString('▶ Name:', $form->render());
+    }
+
+    public function testTextareaEscCompletionSubmitsFormWhenLastFieldAndValid() : void
+    {
+        $form = new Form('Feedback Form', [
+            'name' => new TextInput('Name:', default: 'Alice'),
+            'feedback' => new Textarea('Feedback:', default: 'Great product!'),
+        ]);
+
+        // Move to feedback (last field)
+        $form->handleKey(Key::Tab);
+        $this->assertStringContainsString('▶ Feedback:', $form->render());
+
+        // Esc completes textarea and submits form since it is the last field and all fields are valid
+        $form->handleKey(Key::Esc);
+        $this->assertTrue($form->isDone());
+        $this->assertSame([
+            'name' => 'Alice',
+            'feedback' => 'Great product!',
+        ], $form->getResult());
+    }
+
+    public function testTextareaEscCompletionFailsWhenFormInvalid() : void
+    {
+        $validator = new CallbackValidator(static fn (string $v) : ?string => '' !== trim($v) ? null : 'Required');
+        $form = new Form('Contact Form', [
+            'email' => new TextInput('Email:', validator: $validator), // empty, invalid
+            'message' => new Textarea('Message:', default: 'Hello'),
+        ]);
+
+        // Move focus to message (last field)
+        $form->handleKey(Key::Tab);
+        $this->assertStringContainsString('▶ Message:', $form->render());
+
+        // Esc on message attempts submit, but email is invalid
+        $form->handleKey(Key::Esc);
+        $this->assertFalse($form->isDone());
+
+        $rendered = $form->render();
+        $this->assertStringContainsString('✗ Please fix the errors in the form.', $rendered);
+        $this->assertStringContainsString('▶ Email:', $rendered);
+    }
 }
+
