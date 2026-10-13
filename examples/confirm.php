@@ -16,18 +16,18 @@ try {
     echo "\nResult 1:\n";
     echo '  Run migrations: ' . ($runMigrations ? 'Yes' : 'No') . "\n\n";
 
-    // 2. Localized confirmation with custom options
-    $localizedConfirm = new Confirm(
-        'Видалити тимчасові файли кешу?',
+    // 2. Custom confirmation options
+    $customConfirm = new Confirm(
+        'Purge temporary cache files?',
         default: false,
-        yes: 'Так',
-        no: 'Ні',
-        instruction: 'Стрілки або т/н для вибору, Enter для підтвердження'
+        yes: 'Purge',
+        no: 'Keep',
+        instruction: 'Use ← → / p/k to select, Enter to confirm'
     );
-    $deleteCache = Runner::run($localizedConfirm);
+    $purgeCache = Runner::run($customConfirm);
 
     echo "Result 2:\n";
-    echo '  Видалити кеш: ' . ($deleteCache ? 'Так' : 'Ні') . "\n\n";
+    echo '  Purge cache: ' . ($purgeCache ? 'Purge' : 'Keep') . "\n\n";
 } catch (SignalException $e) {
     echo "\n";
     exit($e->getCode());
