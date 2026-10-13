@@ -751,7 +751,7 @@ final class TerminalTest extends TestCase
         $execCommand = new ReflectionMethod(Terminal::class, 'execCommand');
         $execStty = new ReflectionMethod(Terminal::class, 'execStty');
 
-        set_error_handler(static fn() => true);
+        set_error_handler(static fn () => true);
         $files = [];
         try {
             while (true) {
