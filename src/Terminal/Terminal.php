@@ -491,6 +491,9 @@ class Terminal
     {
         /** @var resource $process */
         $process = proc_open($command, [0 => ['null'], 1 => ['pipe', 'w'], 2 => ['null']], $pipes);
+        if (false === $process) {
+            return null;
+        }
         /** @var array{1: resource} $pipes */
         $output = stream_get_contents($pipes[1]);
         fclose($pipes[1]);
