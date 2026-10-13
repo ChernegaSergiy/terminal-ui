@@ -319,6 +319,10 @@ final class TerminalTest extends TestCase
 
     public function testDimensionsFromEnvironmentVariables() : void
     {
+        [$reader, $writer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        fclose($writer);
+        Terminal::setInputStream($reader);
+
         $origCols = getenv('COLUMNS');
         $origLines = getenv('LINES');
 
@@ -330,6 +334,8 @@ final class TerminalTest extends TestCase
             $this->assertSame(110, Terminal::getWidth());
             $this->assertSame(35, Terminal::getHeight());
         } finally {
+            fclose($reader);
+            Terminal::setInputStream(null);
             if (false !== $origCols) {
                 putenv("COLUMNS={$origCols}");
             } else {
@@ -346,6 +352,10 @@ final class TerminalTest extends TestCase
 
     public function testDimensionsPartialEnvCols() : void
     {
+        [$reader, $writer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        fclose($writer);
+        Terminal::setInputStream($reader);
+
         $origCols = getenv('COLUMNS');
         $origLines = getenv('LINES');
 
@@ -357,6 +367,8 @@ final class TerminalTest extends TestCase
             $this->assertSame(125, Terminal::getWidth());
             $this->assertGreaterThan(0, Terminal::getHeight());
         } finally {
+            fclose($reader);
+            Terminal::setInputStream(null);
             if (false !== $origCols) {
                 putenv("COLUMNS={$origCols}");
             } else {
@@ -373,6 +385,10 @@ final class TerminalTest extends TestCase
 
     public function testDimensionsPartialEnvLines() : void
     {
+        [$reader, $writer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        fclose($writer);
+        Terminal::setInputStream($reader);
+
         $origCols = getenv('COLUMNS');
         $origLines = getenv('LINES');
 
@@ -384,6 +400,8 @@ final class TerminalTest extends TestCase
             $this->assertSame(55, Terminal::getHeight());
             $this->assertGreaterThan(0, Terminal::getWidth());
         } finally {
+            fclose($reader);
+            Terminal::setInputStream(null);
             if (false !== $origCols) {
                 putenv("COLUMNS={$origCols}");
             } else {
@@ -531,25 +549,31 @@ final class TerminalTest extends TestCase
         $this->assertNull($fail);
     }
 
-    public function testDetectSystemDimensionsHelper() : void
+    public function testDetectSttyAndTputDimensionsHelpers() : void
     {
-        $method = new ReflectionMethod(Terminal::class, 'detectSystemDimensions');
+        $sttyMethod = new ReflectionMethod(Terminal::class, 'detectSttyDimensions');
+        $tputMethod = new ReflectionMethod(Terminal::class, 'detectTputDimensions');
 
-        $dimensions = $method->invoke(null);
-        $this->assertIsArray($dimensions);
-        $this->assertCount(2, $dimensions);
-
-        $origPath = getenv('PATH');
-        putenv('PATH=/nonexistent');
         [$reader, $writer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
         fclose($writer);
         Terminal::setInputStream($reader);
 
         try {
-            $this->assertSame([null, null], $method->invoke(null));
+            $this->assertSame([null, null], $sttyMethod->invoke(null));
+
+            $dimensions = $tputMethod->invoke(null);
+            $this->assertIsArray($dimensions);
+            $this->assertCount(2, $dimensions);
         } finally {
             fclose($reader);
             Terminal::setInputStream(null);
+        }
+
+        $origPath = getenv('PATH');
+        putenv('PATH=/nonexistent');
+        try {
+            $this->assertSame([null, null], $tputMethod->invoke(null));
+        } finally {
             if (false !== $origPath) {
                 putenv("PATH={$origPath}");
             } else {

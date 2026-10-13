@@ -432,18 +432,20 @@ class Terminal
     }
 
     /**
-     * Initializes cached terminal dimensions by probing environment variables,
-     * stty, and tput.
+     * Initializes cached terminal dimensions by probing the live terminal,
+     * environment variables, tput, and defaults.
      */
     private static function initDimensions() : void
     {
-        $cols = self::getEnvInt('COLUMNS');
-        $rows = self::getEnvInt('LINES');
+        [$sttyCols, $sttyRows] = self::detectSttyDimensions();
+
+        $cols = $sttyCols ?? self::getEnvInt('COLUMNS');
+        $rows = $sttyRows ?? self::getEnvInt('LINES');
 
         if (null === $cols || null === $rows) {
-            [$sysCols, $sysRows] = self::detectSystemDimensions();
-            $cols ??= $sysCols;
-            $rows ??= $sysRows;
+            [$tputCols, $tputRows] = self::detectTputDimensions();
+            $cols ??= $tputCols;
+            $rows ??= $tputRows;
         }
 
         self::$width = $cols ?? self::DEFAULT_WIDTH;
@@ -451,11 +453,11 @@ class Terminal
     }
 
     /**
-     * Probes terminal dimensions from stty and tput.
+     * Probes terminal dimensions from stty on the active input stream.
      *
      * @return array{0: ?int, 1: ?int}
      */
-    private static function detectSystemDimensions() : array
+    private static function detectSttyDimensions() : array
     {
         $stty = self::execStty('stty size');
         if (null !== $stty && 1 === preg_match('/^(\d+)\s+(\d+)$/', trim($stty), $matches)) {
@@ -466,6 +468,16 @@ class Terminal
             }
         }
 
+        return [null, null];
+    }
+
+    /**
+     * Probes terminal dimensions from terminfo database via tput.
+     *
+     * @return array{0: ?int, 1: ?int}
+     */
+    private static function detectTputDimensions() : array
+    {
         $tputCols = self::execCommand('tput cols');
         $tputLines = self::execCommand('tput lines');
 
