@@ -53,9 +53,13 @@ class Confirm extends AbstractComponent
             $firstYes = mb_substr(mb_strtolower($this->yes), 0, 1);
             $firstNo = mb_substr(mb_strtolower($this->no), 0, 1);
 
-            if ('y' === $lowerKey || ('' !== $firstYes && $lowerKey === $firstYes)) {
+            if ('y' === $lowerKey) {
                 $this->value = true;
-            } elseif ('n' === $lowerKey || ('' !== $firstNo && $lowerKey === $firstNo)) {
+            } elseif ('n' === $lowerKey) {
+                $this->value = false;
+            } elseif ('' !== $firstYes && $lowerKey === $firstYes) {
+                $this->value = true;
+            } elseif ('' !== $firstNo && $lowerKey === $firstNo) {
                 $this->value = false;
             }
         }
