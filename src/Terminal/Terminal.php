@@ -492,12 +492,8 @@ class Terminal
 
     private static function execCommand(string $command) : ?string
     {
-        /** @var resource|false $process */
-        $process = @proc_open($command, [0 => ['null'], 1 => ['pipe', 'w'], 2 => ['null']], $pipes);
-        if (! is_resource($process)) {
-            return null;
-        }
-
+        /** @var resource $process */
+        $process = proc_open($command, [0 => ['null'], 1 => ['pipe', 'w'], 2 => ['null']], $pipes);
         /** @var array{1: resource} $pipes */
         $output = stream_get_contents($pipes[1]);
         fclose($pipes[1]);
