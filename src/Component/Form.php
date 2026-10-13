@@ -70,6 +70,43 @@ class Form extends AbstractComponent
             return;
         }
 
+        if ($current_component instanceof Textarea) {
+            if (Key::Tab === $key) {
+                $this->focusedIndex = ($this->focusedIndex + 1) % count($this->components);
+                return;
+            }
+
+            if (Key::Down === $key) {
+                [$row] = $current_component->getCursorRowAndCol();
+                if ($row >= $current_component->getLineCount() - 1) {
+                    $this->focusedIndex = ($this->focusedIndex + 1) % count($this->components);
+                    return;
+                }
+            } elseif (Key::Up === $key) {
+                [$row] = $current_component->getCursorRowAndCol();
+                if (0 === $row) {
+                    $this->focusedIndex = ($this->focusedIndex - 1 + count($this->components)) % count($this->components);
+                    return;
+                }
+            }
+
+            $current_component->handleKey($key);
+
+            if ($current_component->isDone() && $current_component->isValid()) {
+                if ($this->focusedIndex === count($this->components) - 1) {
+                    if ($this->isValid()) {
+                        $this->done = true;
+                    } else {
+                        $this->submitFailed = true;
+                        $this->focusFirstInvalid();
+                    }
+                } else {
+                    $this->focusedIndex = ($this->focusedIndex + 1) % count($this->components);
+                }
+            }
+            return;
+        }
+
         if (Key::Down === $key || Key::Tab === $key) {
             // Move focus to the next component
             $this->focusedIndex = ($this->focusedIndex + 1) % count($this->components);
